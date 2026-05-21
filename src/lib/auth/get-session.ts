@@ -5,14 +5,14 @@ import { redirect } from 'next/navigation'
 export async function getSessionOrRedirect(): Promise<UserProfile> {
   const supabase = await createClient()
 
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-  if (sessionError || !session) {
+  if (userError || !user) {
     redirect('/login')
   }
 
-  // Profil + Rolle + Berechtigungen in einem Join laden
-  const { data: profile, error: profileError } = await supabase
+  // FIX: Wir fassen roles und role_permissions in einer einzigen Verschachtelung zusammen
+  const { data, error: profileError } = await supabase
     .from('profiles')
     .select(`
       id,
@@ -24,21 +24,22 @@ export async function getSessionOrRedirect(): Promise<UserProfile> {
         id,
         name,
         slug,
-        color
-      ),
-      roles!inner (
+        color,
         role_permissions (
           resource,
           action
         )
       )
     `)
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single()
 
-  if (profileError || !profile) {
+  if (profileError || !data) {
+    console.error("Profil-Ladefehler:", profileError)
     redirect('/login')
   }
+
+  const profile = data as any
 
   // Rechte-Array flach machen
   const permissions = (profile.roles?.role_permissions ?? []).map((p: any) => ({
