@@ -16,7 +16,7 @@ export function Topbar({ profile }: { profile: UserProfile }) {
   }
 
   return (
-    <header className="h-16 bg-white border-b border-zinc-200 px-6 flex items-center justify-between shrink-0">
+    <header className="h-16 bg-white border-b border-zinc-200 px-6 flex items-center justify-between shrink-0 print:hidden">
       <div className="flex-1" /> {/* Platzhalter für zukünftige Breadcrumbs oder Suche */}
       
       <div className="flex items-center gap-4">
