@@ -97,16 +97,20 @@ export function EditShiftDialog({ shift, profiles }: { shift: any, profiles: any
           e.stopPropagation()
           setOpen(true)
         }}
-        className={`w-full flex items-center justify-between gap-1 p-1 rounded-md border ${bgClass} shadow-sm transition-all cursor-pointer print:border-none print:p-0`}
+        // NEU: Responsive Paddings und runde Ecken (sm:...)
+        className={`w-full flex items-center justify-between gap-1 p-0.5 px-1 sm:p-1 rounded-[3px] sm:rounded-md border ${bgClass} shadow-sm transition-all cursor-pointer print:border-none print:p-0`}
       >
-        <span className="text-[11px] font-semibold truncate leading-none">
+        {/* NEU: Schriftgröße auf dem Handy winzig (text-[9px]), auf PC normal */}
+        <span className="text-[9px] sm:text-[11px] font-bold sm:font-semibold truncate leading-tight sm:leading-none">
           {shift.profiles?.full_name?.split(' ')[0]}
         </span>
-        <span className="text-[10px] opacity-80 whitespace-nowrap leading-none font-medium">
+        {/* NEU: Uhrzeit auf dem Handy ausblenden (hidden sm:block) */}
+        <span className="text-[10px] opacity-80 whitespace-nowrap leading-none font-medium hidden sm:block">
           {timeText}
         </span>
       </div>
       
+      {/* ... DEIN BESTEHENDER DIALOG-CODE BLEIBT UNVERÄNDERT ... */}
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[425px] rounded-2xl bg-white transition-all">
           <DialogHeader>
@@ -116,15 +120,14 @@ export function EditShiftDialog({ shift, profiles }: { shift: any, profiles: any
             <DialogDescription className="text-sm text-zinc-500">
               {showDeleteConfirm 
                 ? (shift.group_id 
-                    ? 'Achtung: Dies löscht den gesamten zusammenhängenden Zeitraum!' 
-                    : 'Diese Aktion kann nicht rückgängig gemacht werden.')
+                  ? 'Achtung: Dies löscht den gesamten zusammenhängenden Zeitraum!' 
+                  : 'Diese Aktion kann nicht rückgängig gemacht werden.')
                 : 'Ändern Sie die Daten oder löschen Sie den Eintrag.'}
             </DialogDescription>
           </DialogHeader>
           
           <form onSubmit={handleUpdate} className="space-y-4 py-4">
             
-            {/* Wenn wir gerade löschen wollen, verstecken wir das Formular sanft */}
             <div className={showDeleteConfirm ? 'hidden' : 'space-y-4'}>
               <div className="space-y-2">
                 <Label htmlFor="profile_id">Mitarbeiter</Label>
@@ -194,7 +197,6 @@ export function EditShiftDialog({ shift, profiles }: { shift: any, profiles: any
                     Was möchten Sie löschen?
                   </div>
                   
-                  {/* Wenn es Teil eines Zeitraums ist, zeige 3 Buttons (gestapelt für bessere Lesbarkeit) */}
                   {shift.group_id ? (
                     <div className="flex flex-col gap-2">
                       <Button type="button" variant="destructive" onClick={() => handleDelete(false)} disabled={loading} className="rounded-xl w-full bg-red-100 text-red-700 hover:bg-red-200 border-none">
@@ -208,7 +210,6 @@ export function EditShiftDialog({ shift, profiles }: { shift: any, profiles: any
                       </Button>
                     </div>
                   ) : (
-                    /* Wenn es ein einzelner Eintrag ist, zeige wie gewohnt 2 Buttons nebeneinander */
                     <div className="flex items-center gap-4">
                       <Button type="button" variant="outline" onClick={() => setShowDeleteConfirm(false)} className="rounded-xl flex-1 border-zinc-200">
                         Abbrechen

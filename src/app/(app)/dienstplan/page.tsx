@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getShifts } from '@/lib/data/shifts'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent } from '@/components/ui/card'
@@ -8,7 +9,9 @@ import { ViewToggle } from './ViewToggle'
 import { DayView } from './DayView'
 import { WeekView } from './WeekView'
 import { PrintButton } from './PrintButton'
+import { getBerlinHolidays } from '@/lib/holidays'
 import { cn } from '@/lib/utils'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 type Props = {
   searchParams: Promise<{ role?: string, view?: string, date?: string }>
@@ -20,17 +23,15 @@ export default async function DienstplanPage({ searchParams }: Props) {
   const selectedRole = params.role
   const currentView = params.view || 'monat'
   
-  // Das Zieldatum bestimmen (wichtig, falls man in der Tagesansicht einen anderen Monat aufruft)
-  const searchDate = params.date ? new Date(params.date) : new Date()
+  const searchDate = params.date ? new Date(`${params.date}T12:00:00`) : new Date()
+  searchDate.setHours(12, 0, 0, 0)
+  
   const year = searchDate.getFullYear()
   const month = searchDate.getMonth()
 
-  // Monatsgrenzen bestimmen
   const firstDayOfMonth = new Date(year, month, 1)
   const lastDayOfMonth = new Date(year, month + 1, 0)
   
-  // Wir laden immer den aktuellen Monat PLUS 7 Tage Puffer davor und danach, 
-  // damit Wochen, die in den nächsten Monat ragen, fehlerfrei angezeigt werden.
   const fetchStart = new Date(year, month, 1)
   fetchStart.setDate(fetchStart.getDate() - 7)
   const fetchEnd = new Date(year, month + 1, 0)
@@ -38,6 +39,26 @@ export default async function DienstplanPage({ searchParams }: Props) {
   
   const startIso = fetchStart.toISOString().split('T')[0]
   const endIso = fetchEnd.toISOString().split('T')[0]
+
+  let prevDateStr = ''
+  let nextDateStr = ''
+
+  if (currentView === 'tag') {
+    const p = new Date(searchDate); p.setDate(p.getDate() - 1);
+    const n = new Date(searchDate); n.setDate(n.getDate() + 1);
+    prevDateStr = p.toISOString().split('T')[0]
+    nextDateStr = n.toISOString().split('T')[0]
+  } else if (currentView === 'woche') {
+    const p = new Date(searchDate); p.setDate(p.getDate() - 7);
+    const n = new Date(searchDate); n.setDate(n.getDate() + 7);
+    prevDateStr = p.toISOString().split('T')[0]
+    nextDateStr = n.toISOString().split('T')[0]
+  } else {
+    const p = new Date(year, month - 1, 1, 12);
+    const n = new Date(year, month + 1, 1, 12);
+    prevDateStr = p.toISOString().split('T')[0]
+    nextDateStr = n.toISOString().split('T')[0]
+  }
 
   let shifts = await getShifts(startIso, endIso)
   
@@ -64,32 +85,63 @@ export default async function DienstplanPage({ searchParams }: Props) {
   }
 
   const weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
+  const holidays = getBerlinHolidays(year)
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="flex flex-col gap-6 animate-in fade-in duration-500 min-h-screen print:min-h-0">
       
-      {/* Header Area */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">
-            {searchDate.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}
-          </h1>
-          <p className="text-sm text-zinc-500 mt-1 print:hidden">Praxis-Schichtplan und Besetzung</p>
+      <style dangerouslySetInnerHTML={{__html: `
+        @media print {
+          @page { size: landscape; margin: 1cm; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          html, body, main { height: auto !important; overflow: visible !important; }
+        }
+      `}} />
+      
+      {/* NEUER SAUBERER HEADER BEREICH */}
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 print:hidden">
+        
+        <div className="flex items-center gap-3 w-full xl:w-auto justify-between xl:justify-start">
+          <div className="flex items-center gap-2">
+            <Link 
+              href={`?view=${currentView}&date=${prevDateStr}`} 
+              className="p-2 bg-white border border-zinc-200 shadow-sm rounded-lg hover:bg-zinc-50 text-zinc-600 transition-colors"
+            >
+              <ChevronLeft size={20} strokeWidth={2.5} />
+            </Link>
+            
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 tracking-tight w-[160px] sm:w-[200px] text-center">
+              {searchDate.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}
+            </h1>
+            
+            <Link 
+              href={`?view=${currentView}&date=${nextDateStr}`} 
+              className="p-2 bg-white border border-zinc-200 shadow-sm rounded-lg hover:bg-zinc-50 text-zinc-600 transition-colors"
+            >
+              <ChevronRight size={20} strokeWidth={2.5} />
+            </Link>
+          </div>
+
+          <div className="hidden sm:block border-l-2 border-emerald-500/30 pl-4 py-1">
+            <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Dienstplan</p>
+            <p className="text-sm font-medium text-zinc-400">Praxis-Besetzung</p>
+          </div>
         </div>
         
-        {/* Kontrollzentrum: Filter, Umschalter & Neuer Eintrag */}
-        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-between sm:justify-start print:hidden">
+        {/* Kontroll-Elemente fließen jetzt sauber um */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full xl:w-auto">
           <PrintButton />
           <RoleFilter />
           <ViewToggle />
-          <AddShiftDialog 
-            profiles={profiles || []} 
-            defaultDate={params.date || new Date().toISOString().split('T')[0]} 
-          />
+          <div className="ml-auto sm:ml-0">
+            <AddShiftDialog 
+              profiles={profiles || []} 
+              defaultDate={params.date || new Date().toISOString().split('T')[0]} 
+            />
+          </div>
         </div>
       </div>
 
-      {/* Logik: Entweder Tag, Woche oder Monat rendern! */}
       {currentView === 'tag' && (
         <DayView 
           dateStr={params.date || new Date().toISOString().split('T')[0]} 
@@ -107,58 +159,76 @@ export default async function DienstplanPage({ searchParams }: Props) {
       )}
 
       {currentView === 'monat' && (
-        <Card className="border-zinc-200/80 shadow-sm rounded-2xl overflow-hidden bg-white flex flex-col min-h-[calc(100vh-10rem)] print:min-h-0">
-          <CardContent className="p-0">
-            <div className="grid grid-cols-7 border-b border-zinc-100 bg-zinc-50/70 text-center py-3">
-              {weekdays.map((day) => (
-                <span key={day} className="text-xs font-semibold text-zinc-600">{day}</span>
-              ))}
-            </div>
+        <div className="w-full">
+          {/* NEU: Keine min-w-[900px] mehr! Der Kalender passt sich dem Handy an. */}
+          <Card className="border-zinc-200/80 shadow-sm rounded-none sm:rounded-2xl overflow-hidden bg-white min-h-[calc(100vh-12rem)] flex flex-col print:min-h-0 print:border-none print:shadow-none">
+            <CardContent className="p-0 flex flex-col flex-1">
+              
+              {/* Wochentage */}
+              <div className="grid grid-cols-7 border-b border-zinc-100 bg-zinc-50/70 text-center py-1 sm:py-3 print:bg-zinc-100/50">
+                {weekdays.map((day) => (
+                  <span key={day} className="text-[10px] sm:text-xs font-semibold text-zinc-600 print:text-black">{day}</span>
+                ))}
+              </div>
 
-            <div className="grid grid-cols-7 auto-rows-[140px] divide-x divide-y divide-zinc-100">
-              {calendarCells.map((cell, idx) => {
-                const dayShifts = shifts.filter((s: any) => s.date === cell.dateStr)
+              {/* Raster: Auf dem Handy reichen 80px Höhe, am PC 140px */}
+              <div className="grid grid-cols-7 flex-1 divide-x divide-y divide-zinc-100 auto-rows-[minmax(80px,_1fr)] sm:auto-rows-[minmax(140px,_1fr)] print:auto-rows-auto print:divide-zinc-300">
+                {calendarCells.map((cell, idx) => {
+                  const dayShifts = shifts.filter((s: any) => s.date === cell.dateStr)
+                  const holiday = holidays.find(h => h.date === cell.dateStr)
 
-                if (!cell.dayNum) {
-                  return <div key={idx} className="p-2 bg-zinc-50/30 text-transparent select-none" />
-                }
+                  if (!cell.dayNum) {
+                    return <div key={idx} className="p-0.5 sm:p-2 bg-zinc-50/30 text-transparent select-none print:bg-transparent" />
+                  }
 
-                return (
-                  <div key={idx} className={cn("p-2 flex flex-col transition-colors bg-white overflow-hidden", cell.isToday && "bg-emerald-50/10")}>
-                    
-                    <AddShiftDialog
-                      profiles={profiles || []}
-                      defaultDate={cell.dateStr || ''}
-                      trigger={
-                        <div className="flex justify-between items-center mb-1.5 shrink-0 cursor-pointer rounded-md hover:bg-zinc-100 p-1 -mt-1 -mx-1 transition-colors">
-                          <span className={cn("text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full text-zinc-700", cell.isToday && "bg-emerald-600 text-white shadow-md")}>
-                            {cell.dayNum}
-                          </span>
-                        </div>
-                      }
-                    />
-
-                    <div className="flex-1 flex flex-col overflow-y-auto print:overflow-visible print:max-h-none pr-1 scrollbar-thin scrollbar-thumb-zinc-200 scrollbar-track-transparent">
-                      <div className="space-y-1.5">
-                        {dayShifts.map((shift: any) => (
-                          <EditShiftDialog key={shift.id} shift={shift} profiles={profiles || []} />
-                        ))}
-                      </div>
-
+                  return (
+                    <div key={idx} className={cn("p-0.5 sm:p-2 flex flex-col transition-colors bg-white overflow-hidden print:h-auto print:overflow-visible print:break-inside-avoid print:p-1.5", cell.isToday && "bg-emerald-50/10 print:bg-transparent", holiday && "bg-rose-50/10")}>
+                      
                       <AddShiftDialog
                         profiles={profiles || []}
                         defaultDate={cell.dateStr || ''}
                         trigger={
-                          <div className="flex-1 w-full min-h-[2rem] cursor-pointer rounded-md hover:bg-zinc-50/80 mt-1 transition-colors print:hidden" />
+                          <button 
+                            type="button" 
+                            className="w-full block flex justify-between items-center mb-0.5 sm:mb-1 shrink-0 cursor-pointer rounded-sm hover:bg-zinc-100 p-0.5 sm:p-0.5 -mt-0.5 -mx-0.5 transition-colors"
+                          >
+                            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-0.5 sm:gap-1.5 w-full">
+                              <span className={cn("text-[10px] sm:text-[11px] font-bold w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full text-zinc-700 print:text-black", cell.isToday && "bg-emerald-600 text-white shadow-md print:bg-transparent print:text-black", holiday && "text-rose-600 bg-rose-100 shadow-none font-extrabold print:bg-transparent print:text-rose-600")}>
+                                {cell.dayNum}
+                              </span>
+                              {holiday && (
+                                <span className="text-[7px] sm:text-[10px] font-bold text-rose-700 bg-rose-100/60 px-1 sm:px-1.5 py-0 sm:py-0.5 rounded truncate w-full sm:w-auto text-center sm:text-left">
+                                  {holiday.name}
+                                </span>
+                              )}
+                            </div>
+                          </button>
                         }
                       />
+
+                      <div className="flex-1 flex flex-col space-y-0.5 sm:space-y-1 pr-0 sm:pr-1 scrollbar-thin scrollbar-thumb-zinc-200 scrollbar-track-transparent print:space-y-0.5 print:pr-0 overflow-y-hidden sm:overflow-y-auto">
+                        {dayShifts.map((shift: any) => (
+                          <EditShiftDialog key={shift.id} shift={shift} profiles={profiles || []} />
+                        ))}
+                        
+                        <AddShiftDialog
+                          profiles={profiles || []}
+                          defaultDate={cell.dateStr || ''}
+                          trigger={
+                            <button 
+                              type="button" 
+                              className="block flex-1 w-full min-h-[1rem] sm:min-h-[1.5rem] cursor-pointer rounded-md hover:bg-zinc-50/80 mt-1 transition-colors border-none bg-transparent print:hidden" 
+                            />
+                          }
+                        />
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   )

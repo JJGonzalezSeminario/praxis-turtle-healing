@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { hasPermission } from '@/lib/auth/permissions'
@@ -41,29 +42,38 @@ const NAV_ITEMS = [
   }
 ]
 
-export function Sidebar({ profile }: { profile: UserProfile }) {
+// NEU: className als Prop hinzugefügt
+export function Sidebar({ profile, className }: { profile: UserProfile, className?: string }) {
   const pathname = usePathname()
 
-  // Dynamische Daten aus dem Profil laden (mit Fallbacks zur Sicherheit)
   const fullName = profile?.full_name || 'Nutzer'
   const initials = (profile as any)?.initials || fullName.charAt(0).toUpperCase()
   const roleName = (profile as any)?.roles?.name || 'Mitarbeiter'
 
   return (
-    <aside className="w-64 bg-white border-r border-zinc-200 flex flex-col shrink-0 transition-all duration-300 print:hidden">
-      <div className="px-5 py-6 border-b border-zinc-200/60">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-emerald-700 flex items-center justify-center text-white text-lg shadow-sm">
-            🐢
+    // NEU: cn() fügt die neuen Klassen (z.B. hidden) dynamisch hinzu
+    <aside className={cn("w-64 bg-white border-r border-zinc-200 flex flex-col shrink-0 transition-all duration-300 print:hidden", className)}>
+      
+      <div className="px-6 py-8 border-b border-zinc-200/60 bg-white">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 shrink-0 flex items-center justify-center p-0.5">
+            <Image 
+              src="/logo.png" 
+              alt="Turtle-Healing Logo" 
+              width={48} 
+              height={48} 
+              className="object-contain"
+              priority
+            />
           </div>
-          <div>
-            <p className="text-[14px] font-bold text-zinc-900 tracking-tight">Turtle-Healing</p>
-            <p className="text-[11px] text-zinc-500 font-medium">Praxisverwaltung</p>
+          <div className="min-w-0">
+            <p className="text-[17px] font-extrabold text-zinc-900 tracking-tight leading-tight">Turtle-Healing</p>
+            <p className="text-[12px] text-zinc-500 font-medium -mt-0.5">Praxisverwaltung</p>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-5 overflow-y-auto space-y-6">
+      <nav className="flex-1 px-3 py-6 overflow-y-auto space-y-7">
         {NAV_ITEMS.map(section => {
           const visibleItems = section.items.filter(item =>
             hasPermission(profile, item.resource, 'view')
@@ -86,7 +96,7 @@ export function Sidebar({ profile }: { profile: UserProfile }) {
                       className={cn(
                         'flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-all duration-200',
                         isActive
-                          ? 'bg-emerald-50 text-emerald-800 font-semibold'
+                          ? 'bg-emerald-50 text-emerald-800 font-semibold shadow-sm'
                           : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 font-medium'
                       )}
                     >
@@ -101,14 +111,11 @@ export function Sidebar({ profile }: { profile: UserProfile }) {
         })}
       </nav>
       
-      {/* Profil & Logout am unteren Rand der Sidebar */}
       <div className="mt-auto border-t border-zinc-200 p-4 bg-zinc-50/50">
         <div className="flex items-center gap-3">
-          {/* Dynamischer Avatar */}
-          <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 uppercase">
+          <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 uppercase shadow-inner">
             {initials}
           </div>
-          {/* Dynamische Info */}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-zinc-900 truncate" title={fullName}>
               {fullName}
@@ -117,16 +124,8 @@ export function Sidebar({ profile }: { profile: UserProfile }) {
               {roleName}
             </p>
           </div>
-          {/* Logout Button */}
-          <button 
-            className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            title="Abmelden"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
+          <button className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Abmelden">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
           </button>
         </div>
       </div>
