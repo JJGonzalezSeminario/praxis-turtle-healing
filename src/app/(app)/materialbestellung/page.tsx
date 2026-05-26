@@ -1,0 +1,439 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { 
+  ShoppingCart, List, Search, Plus, Printer, 
+  CheckCircle2, AlertCircle, X, Check, Trash2, Hash, Clock
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+const CATEGORIES = ['Alle', 'Medizinisch', 'Verbandmaterial', 'Büro', 'Reinigung', 'Sonstiges']
+
+export default function MaterialbestellungPage() {
+  const supabase = createClient()
+  
+  const [loading, setLoading] = useState(true)
+  const [inventory, setInventory] = useState<any[]>([])
+  const [orderHistory, setOrderHistory] = useState<any[]>([])
+  
+  // User & Rechte
+  const [userId, setUserId] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  // UI States
+  const [activeTab, setActiveTab] = useState<'lager' | 'bestellung' | 'historie'>('lager')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('Alle')
+  const [manualEntry, setManualEntry] = useState('')
+  
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [newItem, setNewItem] = useState({ name: '', category: 'Medizinisch', pzn: '', min_stock: 1 })
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const fetchData = async () => {
+    setLoading(true)
+    
+    // Aktuellen Nutzer & Rolle abfragen
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      setUserId(user.id)
+      const { data: profile } = await supabase.from('profiles').select('*, roles(name)').eq('id', user.id).single()
+      setIsAdmin(profile?.roles?.name === 'Super Admin' || profile?.roles?.name === 'IT-Admin' || profile?.roles?.name === 'Arzt / Ärztin')
+    }
+
+    // Lagerbestand laden
+    const { data: invData } = await supabase.from('inventory').select('*').order('name', { ascending: true })
+    setInventory(invData || [])
+
+    // Bestell-Historie laden
+    const { data: historyData } = await supabase.from('material_orders').select('*, profiles(full_name)').order('created_at', { ascending: false })
+    setOrderHistory(historyData || [])
+
+    setLoading(false)
+  }
+
+  const toggleStatus = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'ok' ? 'offen' : 'ok'
+    setInventory(inventory.map(i => i.id === id ? { ...i, status: newStatus } : i))
+    await supabase.from('inventory').update({ status: newStatus }).eq('id', id)
+  }
+
+  const handleDelivered = async (item: any) => {
+    if (item.category === 'Sonstiges' && !item.pzn) {
+      setInventory(inventory.filter(i => i.id !== item.id))
+      await supabase.from('inventory').delete().eq('id', item.id)
+    } else {
+      toggleStatus(item.id, 'offen')
+    }
+  }
+
+  const addManualEntry = async () => {
+    if (!manualEntry.trim()) return
+    const newDoc = { name: manualEntry, category: 'Sonstiges', pzn: '', status: 'offen', min_stock: 1 }
+    const { data } = await supabase.from('inventory').insert([newDoc]).select()
+    if (data) {
+      setInventory([...inventory, data[0]])
+      setManualEntry('')
+    }
+  }
+
+  const addNewItem = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newItem.name) return
+
+    const { data } = await supabase.from('inventory').insert([{
+      name: newItem.name,
+      category: newItem.category,
+      pzn: newItem.pzn,
+      status: 'ok',
+      min_stock: newItem.min_stock
+    }]).select()
+
+    if (data) {
+      setInventory([...inventory, data[0]].sort((a, b) => a.name.localeCompare(b.name)))
+      setIsModalOpen(false)
+      setNewItem({ name: '', category: 'Medizinisch', pzn: '', min_stock: 1 })
+    }
+  }
+
+  const deleteItem = async (id: string) => {
+    if (!confirm("Diesen Artikel komplett aus dem System löschen?")) return
+    setInventory(inventory.filter(i => i.id !== id))
+    await supabase.from('inventory').delete().eq('id', id)
+  }
+
+  const orderItems = inventory.filter(item => item.status === 'offen')
+
+  // NEU: Diese Funktion speichert die Historie und öffnet im selben Moment den Druck-Dialog!
+  const createAndPrintOrderList = async () => {
+    if (orderItems.length === 0 || !userId) return
+    
+    const itemsSnapshot = orderItems.map(i => ({ name: i.name, pzn: i.pzn, category: i.category }))
+    
+    const { error } = await supabase.from('material_orders').insert([{
+      user_id: userId,
+      items: itemsSnapshot
+    }])
+
+    if (!error) {
+      // Lädt die Historie im Hintergrund neu, damit der Admin sie direkt sieht
+      fetchData() 
+      
+      // Öffnet sofort das Druck-Fenster für den Mitarbeiter!
+      window.print() 
+    } else {
+      alert("Fehler beim Protokollieren: " + error.message)
+    }
+  }
+
+  const filteredLager = inventory.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         (item.pzn && item.pzn.includes(searchQuery))
+    const matchesCat = categoryFilter === 'Alle' || item.category === categoryFilter
+    return matchesSearch && matchesCat
+  })
+
+  if (loading) return <div className="p-10 text-center text-zinc-500 font-bold">Lade Materialbestand...</div>
+
+  return (
+    <div className="max-w-6xl mx-auto p-4 sm:p-8 animate-in fade-in duration-500 print:p-0 print:m-0">
+      
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 print:hidden">
+        <div>
+          <h1 className="text-3xl font-extrabold text-zinc-900 tracking-tight flex items-center gap-3">
+            <div className="p-3 bg-amber-100 text-amber-700 rounded-2xl">
+              <ShoppingCart size={28} />
+            </div>
+            Materialbestellung
+          </h1>
+          <p className="text-zinc-500 font-medium mt-2">
+            Praxis-Bestand verwalten und Einkaufsliste generieren.
+          </p>
+        </div>
+        
+        <div className="flex gap-2 w-full sm:w-auto">
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="flex-1 sm:flex-none bg-zinc-900 hover:bg-zinc-800 text-white px-5 py-3 rounded-xl font-bold shadow-md transition flex items-center justify-center gap-2"
+          >
+            <Plus size={18} strokeWidth={3} /> <span className="hidden sm:inline">Neuer Artikel</span>
+          </button>
+          
+          {/* NEU: Button führt Speichern UND Drucken aus */}
+          {activeTab === 'bestellung' && orderItems.length > 0 && (
+            <button 
+              onClick={createAndPrintOrderList}
+              className="flex-1 sm:flex-none bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-xl font-bold shadow-md transition flex items-center justify-center gap-2"
+            >
+              <Printer size={18} /> Liste drucken & protokollieren
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex bg-zinc-100 p-1.5 rounded-2xl max-w-xl mb-8 overflow-x-auto custom-scrollbar print:hidden">
+        <button 
+          onClick={() => setActiveTab('lager')} 
+          className={cn("flex-1 py-3 px-4 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 whitespace-nowrap", activeTab === 'lager' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-700")}
+        >
+          <List size={16} /> Lagerbestand
+        </button>
+        <button 
+          onClick={() => setActiveTab('bestellung')} 
+          className={cn("flex-1 py-3 px-4 text-sm font-bold rounded-xl transition-all relative flex items-center justify-center gap-2 whitespace-nowrap", activeTab === 'bestellung' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-700")}
+        >
+          <ShoppingCart size={16} /> Einkaufsliste
+          {orderItems.length > 0 && (
+            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full shadow-sm shadow-rose-500/50"></span>
+          )}
+        </button>
+        
+        {isAdmin && (
+          <button 
+            onClick={() => setActiveTab('historie')} 
+            className={cn("flex-1 py-3 px-4 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 whitespace-nowrap", activeTab === 'historie' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-700")}
+          >
+            <Clock size={16} /> Bestell-Historie
+          </button>
+        )}
+      </div>
+
+      {activeTab === 'lager' && (
+        <div className="space-y-6 animate-in fade-in print:hidden">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1 group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-zinc-400 group-focus-within:text-amber-600 transition-colors" />
+              </div>
+              <input 
+                type="text"
+                placeholder="Nach Artikel oder PZN suchen..."
+                className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-zinc-200 rounded-2xl outline-none focus:border-amber-500 transition-all font-medium text-zinc-800 shadow-sm"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            <select 
+              className="p-3.5 bg-white border-2 border-zinc-200 rounded-2xl outline-none focus:border-amber-500 font-bold text-zinc-700 shadow-sm sm:w-48"
+              value={categoryFilter}
+              onChange={e => setCategoryFilter(e.target.value)}
+            >
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          <div className="bg-white border border-zinc-200 rounded-3xl overflow-hidden shadow-sm">
+            <div className="divide-y divide-zinc-100">
+              {filteredLager.map(item => {
+                const isCritical = item.status === 'offen'
+                return (
+                  <div key={item.id} className={cn("p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition hover:bg-zinc-50 group", isCritical && "bg-rose-50/30")}>
+                    
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <button 
+                        onClick={() => toggleStatus(item.id, item.status)}
+                        className={cn("w-6 h-6 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors", isCritical ? "bg-rose-500 border-rose-500 text-white" : "border-zinc-300 bg-white hover:border-amber-500")}
+                        title={isCritical ? "Von der Liste nehmen" : "Auf die Einkaufsliste setzen"}
+                      >
+                        {isCritical && <Check size={14} strokeWidth={4} />}
+                      </button>
+                      
+                      <div className="min-w-0">
+                        <h3 className={cn("text-base font-extrabold truncate", isCritical ? "text-rose-900" : "text-zinc-900")}>
+                          {item.name}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-md">
+                            {item.category}
+                          </span>
+                          <span className="text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <Hash size={10} /> Min: {item.min_stock || 1}
+                          </span>
+                          {item.pzn && <span className="text-xs font-mono text-zinc-400">PZN: {item.pzn}</span>}
+                          {isCritical && <span className="text-xs font-bold text-rose-500 flex items-center gap-1"><AlertCircle size={12}/> Auf der Liste</span>}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={() => deleteItem(item.id)}
+                      className="p-2 text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors sm:opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'bestellung' && (
+        <div className="space-y-6 animate-in fade-in">
+          
+          <div className="bg-white p-3 rounded-2xl shadow-sm border border-zinc-200 flex flex-col sm:flex-row gap-2 print:hidden">
+            <input 
+              type="text" 
+              placeholder="Was fehlt noch? (Manueller Eintrag...)" 
+              className="flex-1 bg-zinc-50 border-none p-3.5 rounded-xl outline-none focus:ring-2 focus:ring-amber-500 text-zinc-800 font-medium" 
+              value={manualEntry} 
+              onChange={e => setManualEntry(e.target.value)} 
+              onKeyDown={e => e.key === 'Enter' && addManualEntry()} 
+            />
+            <button 
+              onClick={addManualEntry} 
+              className="bg-zinc-900 text-white px-6 py-3.5 rounded-xl font-bold hover:bg-zinc-800 transition"
+            >
+              Hinzufügen
+            </button>
+          </div>
+
+          <div className="hidden print:block mb-8 border-b-2 border-black pb-4">
+            <h2 className="text-3xl font-extrabold mb-1">Einkaufs- & Bestellliste</h2>
+            <p className="text-zinc-500 font-bold">Praxis Turtle-Healing | Stand: {new Date().toLocaleDateString('de-DE')}</p>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-sm overflow-hidden border border-zinc-200 print:shadow-none print:border-black">
+            <div className="bg-rose-50 text-rose-800 p-4 font-bold border-b border-rose-100 flex justify-between items-center print:hidden">
+              <span className="flex items-center gap-2"><AlertCircle size={18}/> Folgende Artikel müssen bestellt werden:</span>
+              <span className="bg-white px-3 py-1 rounded-full text-xs shadow-sm">{orderItems.length} Positionen</span>
+            </div>
+
+            <div className="divide-y divide-zinc-100 print:divide-zinc-300">
+              {orderItems.map(item => (
+                <div key={item.id} className="p-5 flex flex-row items-center gap-4 transition hover:bg-zinc-50">
+                  
+                  {/* Kästchen zum handschriftlichen Abhaken auf dem Papier */}
+                  <div className="hidden print:block w-6 h-6 border-2 border-zinc-400 rounded shrink-0"></div>
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-extrabold text-zinc-900">{item.name}</h3>
+                    <div className="flex items-center gap-3 mt-1">
+                      {item.category !== 'Sonstiges' && (
+                        <span className="text-xs font-bold text-zinc-500">{item.category}</span>
+                      )}
+                      {item.pzn && <span className="text-xs font-mono text-zinc-400">PZN: {item.pzn}</span>}
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 print:hidden">
+                    <button 
+                      onClick={() => handleDelivered(item)} 
+                      className="px-4 py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-bold hover:bg-emerald-600 hover:text-white transition flex items-center gap-2 text-sm"
+                    >
+                      <CheckCircle2 size={16} /> Geliefert
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {orderItems.length === 0 && (
+                <div className="p-16 text-center text-zinc-400 font-medium text-lg print:hidden">
+                  Die Einkaufsliste ist leer. Alles im grünen Bereich! 🎉
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'historie' && isAdmin && (
+        <div className="space-y-6 animate-in fade-in print:hidden">
+          {orderHistory.length === 0 ? (
+            <div className="bg-white rounded-3xl border border-zinc-200 p-16 text-center text-zinc-500 font-bold">
+              Noch keine Bestelllisten protokolliert.
+            </div>
+          ) : (
+            <div className="grid gap-6">
+              {orderHistory.map(order => (
+                <div key={order.id} className="bg-white border border-zinc-200 rounded-3xl overflow-hidden shadow-sm">
+                  <div className="bg-zinc-50 p-4 border-b border-zinc-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div>
+                      <h3 className="font-extrabold text-zinc-900 flex items-center gap-2">
+                        <Clock size={16} className="text-amber-500"/> 
+                        {new Date(order.created_at).toLocaleString('de-DE')} Uhr
+                      </h3>
+                      <p className="text-sm font-medium text-zinc-500 mt-0.5">
+                        Gedruckt & bestellt von: <span className="text-zinc-800">{order.profiles?.full_name || 'Mitarbeiter'}</span>
+                      </p>
+                    </div>
+                    <span className="bg-white border border-zinc-200 text-zinc-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+                      {order.items.length} Positionen
+                    </span>
+                  </div>
+                  <div className="p-4 bg-white">
+                    <ul className="space-y-2">
+                      {order.items.map((item: any, idx: number) => (
+                        <li key={idx} className="flex items-center gap-3 text-sm font-medium text-zinc-700">
+                          <span className="w-1.5 h-1.5 bg-amber-400 rounded-full"></span>
+                          {item.name} 
+                          {item.pzn && <span className="text-zinc-400 font-mono text-xs">(PZN: {item.pzn})</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in print:hidden" onClick={() => setIsModalOpen(false)}>
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md border border-zinc-200 overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center p-6 border-b border-zinc-100 bg-zinc-50/50">
+              <h2 className="text-xl font-extrabold text-zinc-900 flex items-center gap-2">
+                <Plus className="text-amber-600" size={24}/> Neuen Artikel anlegen
+              </h2>
+              <button onClick={() => setIsModalOpen(false)} className="p-2 text-zinc-400 hover:bg-zinc-200 rounded-full transition"><X size={20}/></button>
+            </div>
+
+            <form onSubmit={addNewItem} className="p-6 space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-zinc-500 uppercase">Artikelbezeichnung *</label>
+                <input type="text" required placeholder="z.B. Einmalspritzen 2ml" className="w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-amber-500 font-medium text-zinc-800 bg-white" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-zinc-500 uppercase">Kategorie</label>
+                <select className="w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-amber-500 font-bold text-zinc-800 bg-white" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})}>
+                  {CATEGORIES.filter(c => c !== 'Alle').map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-zinc-500 uppercase">PZN (Optional)</label>
+                  <input type="text" placeholder="12345678" className="w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-amber-500 font-mono text-zinc-800 bg-white" value={newItem.pzn} onChange={e => setNewItem({...newItem, pzn: e.target.value})} />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-zinc-500 uppercase">Mindestbestand</label>
+                  <input 
+                    type="number" 
+                    min="1" 
+                    required 
+                    className="w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-amber-500 font-medium text-zinc-800 bg-white" 
+                    value={newItem.min_stock} 
+                    onChange={e => setNewItem({...newItem, min_stock: parseInt(e.target.value) || 1})} 
+                  />
+                </div>
+              </div>
+
+              <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-amber-500/20 transition-transform active:scale-95 mt-4">
+                Im Lager speichern
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+    </div>
+  )
+}
