@@ -8,12 +8,11 @@ import { hasPermission } from '@/lib/auth/permissions'
 import type { UserProfile } from '@/types/permissions'
 import {
   LayoutDashboard, Calendar, ClipboardList, BookOpen,
-  ShoppingCart, UserCheck, FileText, Wrench, Building2,
+  ShoppingCart, UserCheck, FileText, NotebookTabs,
   UserPlus, Settings, Shield
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-
 
 const NAV_ITEMS = [
   {
@@ -32,8 +31,8 @@ const NAV_ITEMS = [
       { href: '/materialbestellung', label: 'Materialbestellung', icon: ShoppingCart,    resource: 'orders'          as const },
       { href: '/onboarding',         label: 'Onboarding',         icon: UserCheck,       resource: 'onboarding'      as const },
       { href: '/dokumente',          label: 'Dokumentencenter',   icon: FileText,        resource: 'documents'       as const },
-      { href: '/medizinprodukte',    label: 'Medizinprodukte',    icon: Wrench,          resource: 'medical_devices' as const },
-      { href: '/lieferanten',        label: 'Lieferanten',        icon: Building2,       resource: 'suppliers'       as const },
+      { href: '/kontaktbuch',        label: 'Kontaktbuch',        icon: NotebookTabs,    resource: 'contacts'        as const }, // <--- HIER AKTUALISIERT
+      { href: '/antraege',           label: 'Urlaub & Anträge',   icon: Calendar,        resource: 'requests'        as const },
     ]
   },
   {
@@ -45,7 +44,6 @@ const NAV_ITEMS = [
   }
 ]
 
-// NEU: className als Prop hinzugefügt
 export function Sidebar({ profile, className }: { profile: UserProfile, className?: string }) {
   const pathname = usePathname()
 
@@ -56,16 +54,12 @@ export function Sidebar({ profile, className }: { profile: UserProfile, classNam
   const supabase = createClient()
 
   const handleLogout = async () => {
-    // Löscht das Cookie und die Sitzung in Supabase
     await supabase.auth.signOut()
-    // Aktualisiert den Server-Status (damit die Middleware es merkt)
     router.refresh()
-    // Schickt dich zum Login
     router.push('/login')
   }
 
   return (
-    // NEU: cn() fügt die neuen Klassen (z.B. hidden) dynamisch hinzu
     <aside className={cn("w-64 bg-white border-r border-zinc-200 flex flex-col shrink-0 transition-all duration-300 print:hidden", className)}>
       
       <div className="px-6 py-8 border-b border-zinc-200/60 bg-white">
@@ -138,7 +132,6 @@ export function Sidebar({ profile, className }: { profile: UserProfile, classNam
               {roleName}
             </p>
           </div>
-          {/* HIER WAR DER FEHLER: onClick={handleLogout} hat gefehlt! */}
           <button onClick={handleLogout} className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Abmelden">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
           </button>
