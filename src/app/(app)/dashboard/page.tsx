@@ -16,6 +16,7 @@ export default function DashboardPage() {
   // Widget Daten
   const [orderCount, setOrderCount] = useState(0)
   const [workingToday, setWorkingToday] = useState<any[]>([])
+  const [patientCount, setPatientCount] = useState(0) // <-- Der neue Zähler
   const [news, setNews] = useState<any[]>([])
   
   // Pinnwand Eingabe
@@ -32,22 +33,50 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     setLoading(true)
     
-    // Aktuellen Nutzer laden
+    // 1. Aktuellen Nutzer laden
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const { data: profile } = await supabase.from('profiles').select('*, roles(name)').eq('id', user.id).single()
       setUserProfile(profile)
     }
 
-    // Materialbestellungen zählen
+    // 2. Materialbestellungen zählen
     const { count: openOrders } = await supabase.from('inventory').select('*', { count: 'exact', head: true }).eq('status', 'offen')
     setOrderCount(openOrders || 0)
 
-    // Schichten heute
-    const todayStr = today.toISOString().split('T')[0]
-    const { data: shiftsToday } = await supabase.from('shifts').select('*, profiles(full_name)').eq('shift_date', todayStr)
-    setWorkingToday(shiftsToday || [])
+    const todayStr = today.toISOString().split('T')[0] 
+    const todayDe = today.toLocaleDateString('de-DE') 
+    
+    // 3. Schichten abfragen
+    const { data: allShifts, error: shiftError } = await supabase.from('shifts').select('*')
+    const { data: allProfiles } = await supabase.from('profiles').select('id, full_name')
+    
+    if (shiftError) {
+      console.error("DB Fehler Shifts:", shiftError.message)
+    } else if (allShifts) {
+      const todays = allShifts.filter(s => s.date && (s.date.includes(todayStr) || s.date.includes(todayDe)))
+      const shiftsWithNames = todays.map(shift => {
+        const matchedProfile = allProfiles?.find(p => p.id === shift.user_id)
+        return {
+          ...shift,
+          profiles: { full_name: matchedProfile?.full_name || 'Teammitglied' }
+        }
+      })
+      setWorkingToday(shiftsWithNames)
+    }
 
+    // 4. Patienten von heute zählen
+    const { count: patientsToday, error: patientError } = await supabase
+      .from('patient_intakes')
+      .select('*', { count: 'exact', head: true })
+      .like('created_at', `%${todayStr}%`)
+
+    if (patientError) {
+      console.error("DB Fehler Patienten:", patientError.message)
+    }
+    setPatientCount(patientsToday || 0)
+
+    // 5. Pinnwand laden
     fetchNews()
     setLoading(false)
   }
@@ -126,7 +155,7 @@ export default function DashboardPage() {
             <h3 className="font-extrabold text-zinc-900 text-lg">Heute im Haus</h3>
             <p className="text-sm font-medium text-zinc-500 mt-1 truncate">
               {workingToday.length > 0 
-                ? workingToday.map(s => s.profiles?.full_name?.split(' ')[0]).join(', ')
+                ? workingToday.map(s => s.profiles?.full_name?.split(' ')[0] || 'Teammitglied').join(', ')
                 : 'Noch niemand eingeteilt'}
             </p>
           </div>
@@ -138,7 +167,7 @@ export default function DashboardPage() {
             <div className="p-4 bg-indigo-50 text-indigo-500 rounded-2xl">
               <FileText size={28} strokeWidth={2.5} />
             </div>
-            <span className="text-5xl font-black text-zinc-200 tracking-tighter">-</span>
+            <span className="text-5xl font-black text-zinc-900 tracking-tighter">{patientCount}</span>
           </div>
           <div>
             <h3 className="font-extrabold text-zinc-900 text-lg">Neuaufnahmen</h3>

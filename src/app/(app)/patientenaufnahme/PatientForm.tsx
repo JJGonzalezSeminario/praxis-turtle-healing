@@ -4,8 +4,10 @@ import { useState, useRef, useEffect } from 'react'
 import { UserPlus, Activity, Shield, Save, RotateCcw, ChevronRight, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { jsPDF } from 'jspdf'
+import { createClient } from '@/lib/supabase/client' // <-- Supabase Client Importiert
 
 export function PatientForm() {
+  const supabase = createClient() // <-- Supabase initialisiert
   const [step, setStep] = useState(1)
   const [isSuccess, setIsSuccess] = useState(false) 
   
@@ -72,7 +74,7 @@ export function PatientForm() {
     setStep(step + 1)
   }
 
-  const handleSaveAndSend = () => {
+  const handleSaveAndSend = async () => {
     if (transmitData === null) {
       alert('Bitte wählen Sie aus, ob Daten per Mail/Fax übermittelt werden dürfen.')
       return
@@ -157,7 +159,7 @@ export function PatientForm() {
     addText('Mögliche Begleiterscheinungen (Infusion):', true)
     addText('- Blaue Flecken (Hämatome): An der Punktionsstelle kann es zu einem Bluterguss kommen. Dies ist meist harmlos und bildet sich von selbst wieder zurück.\n- Paravasat (Infusion läuft ins Gewebe): In seltenen Fällen kann die Infusion danebenlaufen und ins umliegende Gewebe statt in die Vene gelangen. Dies kann zu Schwellung, Rötung, Schmerzen oder in seltenen Fällen Gewebeschäden führen. Bitte melden Sie sich sofort, wenn Sie während der Infusion Schmerzen, Brennen oder ein Spannungsgefühl verspüren.')
     addText('Blutentnahme', true)
-    addText('Bei der Blutentnahme wird Ihnen mit einer Nadel Blut aus einer Vene (meist am Arm) entnommen. Dies dient diagnostischen Zwecken und ist ein Routineverfahren.')
+    addText('Bei einer Blutentnahme wird Ihnen mit einer Nadel Blut aus einer Vene (meist am Arm) entnommen. Dies dient diagnostischen Zwecken und ist ein Routineverfahren.')
     addText('Mögliche Begleiterscheinungen (Blutentnahme):', true)
     addText('- Blaue Flecken (Hämatome): Auch hier kann es an der Einstichstelle zu einem Bluterguss kommen, insbesondere wenn die Vene tiefer liegt oder empfindlich ist.\n- Schwellung oder leichte Schmerzen: Diese klingen in der Regel rasch wieder ab. Eine kurzzeitige Schonung des Arms kann hilfreich sein.')
     addText('Was Sie beachten sollten:', true)
@@ -185,13 +187,13 @@ export function PatientForm() {
     addText('Patienteninformation zum Datenschutz', true)
     addText('Die Datenverarbeitung erfolgt aufgrund gesetzlicher Vorgaben, um den Behandlungsvertrag zwischen Ihnen und unserer Praxis und die damit verbundenen Pflichten zu erfüllen. Hierzu verarbeiten wir Ihre personenbezogenen Daten, insbesondere Ihre Gesundheitsdaten. Dazu zählen Anamnesen, Diagnosen, Therapievorschläge, Laboraufträge und Befunde, die wir oder andere Ärzte erheben. Zu diesen Zwecken können uns auch andere Ärzte oder Psychotherapeuten und Physiotherapeuten, bei denen Sie in Behandlung sind, Daten zur Verfügung stellen (z.B. in Arztbriefen). Die Erhebung von Gesundheitsdaten ist Voraussetzung für Ihre Behandlung. Werden die notwendigen Informationen nicht bereitgestellt, kann eine sorgfältige Behandlung nicht erfolgen.')
     addText('Empfänger Ihrer Daten', true)
-    addText('Wir übermitteln Ihre personenbezogenen Daten nur dann an Dritte, wenn dies gesetzlich erlaubt ist oder Sie eingewilligt haben. Empfänger Ihrer personenbezogenen Daten können vor allem andere Ärzte / Psychotherapeuten / Physiotherapeuten, Krankenkassen, der Medizinische Dienst der Krankenversicherung, Labore, Ärztekammern und privatärztliche Verrechnungsstellen sein. Die Übermittlung erfolgt überwiegend zum Zwecke der Abrechnung der bei Ihnen erbrachten Leistungen, zur Klärung von medizinischen und sich aus Ihrem Versicherungsverhältnis ergebenden Fragen. Im Einzelfall erfolgt die Übermittlung von Daten an weitere berechtigte Empfänger.')
+    addText('Wir übermitteln Ihre personenbezogenen Daten nur dann an Dritte, wenn dies gesetzlich erlaubt ist oder Sie eingewilligt haben. Empfänger Ihrer personenbezogenen Daten können vor allem andere Ärzte / Psychotherapeuten / Physiotherapeuten, Krankenkassen, der Medizinische Dienst der Krankenversicherung, Labore, Ärztekammern und privatärztliche Verrechnungsstellen sein. Die Übermittlung erfolgt überwiegend zum Zwecke der Abrechnung der bei Ihnen erbrachten Leistungen, zur Klärung von medizinischen und sich aus Ihrem Versicherungsverhältnis ergebenden Questions. Im Einzelfall erfolgt die Übermittlung von Daten an weitere berechtigte Empfänger.')
     addText('Speicherung Ihrer Daten', true)
     addText('Wir bewahren Ihre personenbezogenen Daten nur solange auf, wie dies zur Durchführung der Behandlung erforderlich ist. Aufgrund rechtlicher Vorgaben sind wir dazu verpflichtet, diese Daten mindestens 10 Jahre nach Abschluss der Behandlung aufzubewahren.')
     addText('Ihre Rechte', true)
     addText('Sie haben das Recht, über die Sie betreffenden personenbezogenen Daten Auskunft zu erhalten. Auch können Sie die Berichtigung unrichtiger Daten verlangen. Darüber hinaus steht Ihnen unter bestimmten Voraussetzungen das Recht auf Löschung von Daten, das Recht auf Einschränkung der Datenverarbeitung sowie das Recht auf Datenübertragbarkeit zu. Die Verarbeitung Ihrer Daten erfolgt auf Basis von gesetzlichen Regelungen. Nur in Ausnahmefällen benötigen wir Ihr Einverständnis. In diesen Fällen haben Sie das Recht, die Einwilligung für die zukünftige Verarbeitung zu widerrufen. Sie haben ferner das Recht, sich bei der zuständigen Aufsichtsbehörde für den Datenschutz zu beschweren, wenn Sie der Ansicht sind, dass die Verarbeitung Ihrer personenbezogenen nicht rechtmäßig erfolgt.')
     addText('Rechtliche Grundlagen', true)
-    addText('Rechtsgrundlage für die Verarbeitung Ihrer Daten ist Artikel 9 Abs. 2 lit.h) DSGVO in Verbindung mit §22 Abs 1 Nr.1 lit.b) Bundesdatenschutzgesetz.')
+    addText('Rechtsgrundlage für die Verarbeitung Ihrer Daten is Artikel 9 Abs. 2 lit.h) DSGVO in Verbindung mit §22 Abs 1 Nr.1 lit.b) Bundesdatenschutzgesetz.')
     
     yPos += 5
     addText('Zusatz: Digitale Patientenaufnahme per Tablet', true)
@@ -217,6 +219,13 @@ export function PatientForm() {
 
     const cleanName = formData.name.replace(/[^a-zA-Z0-9]/g, '_')
     doc.save(`Aufnahme_${cleanName}.pdf`)
+    
+    // <-- ZÄHLER IN SUPABASE HOCHZÄHLEN
+    try {
+      await supabase.from('patient_intakes').insert([{}])
+    } catch (err) {
+      console.error("Fehler beim Hochzählen im Dashboard:", err)
+    }
     
     setIsSuccess(true)
   }
@@ -244,7 +253,7 @@ export function PatientForm() {
   return (
     <div className="space-y-6">
       
-      {/* NEUER, KUGELSICHERER FORTSCHRITTSBALKEN (Flexbox Layout) */}
+      {/* PROGRESS BAR */}
       <div className="bg-white py-5 px-4 sm:px-8 rounded-2xl shadow-sm border border-zinc-200 mb-6">
         <div className="flex items-center justify-between w-full max-w-2xl mx-auto">
           
@@ -442,7 +451,7 @@ export function PatientForm() {
               <p>Die Datenverarbeitung erfolgt aufgrund gesetzlicher Vorgaben, um den Behandlungsvertrag zwischen Ihnen und unserer Praxis und die damit verbundenen Pflichten zu erfüllen. Hierzu verarbeiten wir Ihre personenbezogenen Daten, insbesondere Ihre Gesundheitsdaten. Dazu zählen Anamnesen, Diagnosen, Therapievorschläge, Laboraufträge und Befunde, die wir oder andere Ärzte erheben. Zu diesen Zwecken können uns auch andere Ärzte oder Psychotherapeuten und Physiotherapeuten, bei denen Sie in Behandlung sind, Daten zur Verfügung stellen (z.B. in Arztbriefen). Die Erhebung von Gesundheitsdaten ist Voraussetzung für Ihre Behandlung. Werden die notwendigen Informationen nicht bereitgestellt, kann eine sorgfältige Behandlung nicht erfolgen.</p>
               
               <h4 className="font-bold text-zinc-900 mt-4 mb-2">Empfänger Ihrer Daten</h4>
-              <p>Wir übermitteln Ihre personenbezogenen Daten nur dann an Dritte, wenn dies gesetzlich erlaubt ist oder Sie eingewilligt haben. Empfänger Ihrer personenbezogenen Daten können vor allem andere Ärzte / Psychotherapeuten / Physiotherapeuten, Krankenkassen, der Medizinische Dienst der Krankenversicherung, Labore, Ärztekammern und privatärztliche Verrechnungsstellen sein. Die Übermittlung erfolgt überwiegend zum Zwecke der Abrechnung der bei Ihnen erbrachten Leistungen, zur Klärung von medizinischen und sich aus Ihrem Versicherungsverhältnis ergebenden Fragen. Im Einzelfall erfolgt die Übermittlung von Daten an weitere berechtigte Empfänger.</p>
+              <p>Wir übermitteln Ihre personenbezogenen Daten nur dann an Dritte, wenn dies gesetzlich erlaubt ist oder Sie eingewilligt haben. Empfänger Ihrer personenbezogenen Daten können vor allem andere Ärzte / Psychotherapeuten / Physiotherapeuten, Krankenkassen, der Medizinische Dienst der Krankenversicherung, Labore, Ärztekammern und privatärztliche Verrechnungsstellen sein. Die Übermittlung erfolgt überwiegend zum Zwecke der Abrechnung der bei Ihnen erbrachten Leistungen, zur Klärung von medizinischen und sich aus Ihrem Versicherungsverhältnis ergebenden Questions. Im Einzelfall erfolgt die Übermittlung von Daten an weitere berechtigte Empfänger.</p>
               
               <h4 className="font-bold text-zinc-900 mt-4 mb-2">Speicherung Ihrer Daten</h4>
               <p>Wir bewahren Ihre personenbezogenen Daten nur solange auf, wie dies zur Durchführung der Behandlung erforderlich ist. Aufgrund rechtlicher Vorgaben sind wir dazu verpflichtet, diese Daten mindestens 10 Jahre nach Abschluss der Behandlung aufzubewahren.</p>
