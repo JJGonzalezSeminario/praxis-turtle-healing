@@ -67,8 +67,8 @@ export function PatientForm() {
   }
 
   const handleNext = () => {
-    if (step === 1 && (!formData.name || !formData.birthDate)) {
-      alert('Bitte füllen Sie Name und Geburtsdatum aus.')
+    if (step === 1 && (!formData.name || !formData.birthDate || !formData.address || !formData.phone)) {
+      alert('Bitte füllen Sie alle Pflichtfelder aus (Name, Geburtsdatum, Anschrift und Telefonnummer).')
       return
     }
     setStep(step + 1)
@@ -316,11 +316,11 @@ export function PatientForm() {
                 <input type="date" className="w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-emerald-600 bg-zinc-50/50 font-medium" value={formData.birthDate} onChange={e => setFormData({...formData, birthDate: e.target.value})} />
               </div>
               <div className="md:col-span-2 space-y-1">
-                <label className="text-xs font-bold text-zinc-500 uppercase">Anschrift (Straße, PLZ, Ort)</label>
+                <label className="text-xs font-bold text-zinc-500 uppercase">Anschrift (Straße, PLZ, Ort) *</label>
                 <input type="text" className="w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-emerald-600 bg-zinc-50/50 font-medium" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-zinc-500 uppercase">Telefonnummer</label>
+                <label className="text-xs font-bold text-zinc-500 uppercase">Telefonnummer *</label>
                 <input type="tel" className="w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-emerald-600 bg-zinc-50/50 font-medium" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
               </div>
               <div className="space-y-1">

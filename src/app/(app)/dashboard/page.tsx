@@ -6,9 +6,12 @@ import {
   AlertCircle, Users, FileText, Send, Trash2, Clock, MessageSquare
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 export default function DashboardPage() {
   const supabase = createClient()
+  const router = useRouter()
+
   
   const [loading, setLoading] = useState(true)
   const [userProfile, setUserProfile] = useState<any>(null)
@@ -33,10 +36,15 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     setLoading(true)
     
-    // 1. Aktuellen Nutzer laden
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const { data: profile } = await supabase.from('profiles').select('*, roles(name)').eq('id', user.id).single()
+      
+      // --- NEUE SPERRE FÜR DAS TABLET ---
+      if (profile?.roles?.name === 'Patient') {
+        router.push('/patientenaufnahme')
+        return // Bricht das Laden des Dashboards sofort ab
+      }
       setUserProfile(profile)
     }
 
@@ -66,10 +74,16 @@ export default function DashboardPage() {
     }
 
     // 4. Patienten von heute zählen
+    const startOfDay = new Date()
+    startOfDay.setHours(0, 0, 0, 0)
+    const endOfDay = new Date()
+    endOfDay.setHours(23, 59, 59, 999)
+
     const { count: patientsToday, error: patientError } = await supabase
       .from('patient_intakes')
       .select('*', { count: 'exact', head: true })
-      .like('created_at', `%${todayStr}%`)
+      .gte('created_at', startOfDay.toISOString())
+      .lte('created_at', endOfDay.toISOString())
 
     if (patientError) {
       console.error("DB Fehler Patienten:", patientError.message)

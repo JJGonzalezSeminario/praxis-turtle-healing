@@ -31,7 +31,7 @@ const NAV_ITEMS = [
       { href: '/materialbestellung', label: 'Materialbestellung', icon: ShoppingCart,    resource: 'orders'          as const },
       { href: '/onboarding',         label: 'Onboarding',         icon: UserCheck,       resource: 'onboarding'      as const },
       { href: '/dokumente',          label: 'Dokumentencenter',   icon: FileText,        resource: 'documents'       as const },
-      { href: '/kontaktbuch',        label: 'Kontaktbuch',        icon: NotebookTabs,    resource: 'contacts'        as const }, // <--- HIER AKTUALISIERT
+      { href: '/kontaktbuch',        label: 'Kontaktbuch',        icon: NotebookTabs,    resource: 'contacts'        as const },
       { href: '/antraege',           label: 'Urlaub & Anträge',   icon: Calendar,        resource: 'requests'        as const },
     ]
   },
@@ -57,6 +57,11 @@ export function Sidebar({ profile, className }: { profile: UserProfile, classNam
     await supabase.auth.signOut()
     router.refresh()
     router.push('/login')
+  }
+
+  // SPERRE: Wenn der Nutzer die Rolle "Patient" hat, wird die Sidebar komplett ausgeblendet
+  if (roleName === 'Patient') {
+    return null
   }
 
   return (
