@@ -4,9 +4,7 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { EditShiftDialog } from './EditShiftDialog'
 import { AddShiftDialog } from './AddShiftDialog'
-import { cn } from '@/lib/utils'
-
-import { sortShifts } from '@/lib/utils'
+import { cn, sortShifts } from '@/lib/utils'
 
 export function WeekView({ dateStr, shifts, profiles }: { dateStr: string, shifts: any[], profiles: any[] }) {
   // 1. Finde den Montag der aktuellen Woche
