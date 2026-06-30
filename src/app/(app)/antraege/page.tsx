@@ -51,7 +51,7 @@ export default function AntraegePage() {
     setUserId(user.id)
 
     const { data: profile } = await supabase.from('profiles').select('*, roles(name)').eq('id', user.id).single()
-    const isUserAdmin = profile?.roles?.name === 'Super Admin' || profile?.roles?.name === 'Arzt / Ärztin' || profile?.roles?.name === 'IT-Admin'
+    const isUserAdmin = profile?.roles?.slug === 'super_admin' || profile?.roles?.slug === 'arzt' || profile?.roles?.slug === 'it_admin'
     setRole(isUserAdmin ? 'Admin' : 'Mitarbeiter')
 
     const currentYear = new Date().getFullYear()

@@ -1,15 +1,5 @@
-// Fix #7: Dashboard als async Server Component
-// Vorher: 'use client' mit sequenziellen useEffect-Calls (4-5 DB-Roundtrips nacheinander).
-// Jetzt: Server-seitig mit Promise.all() — alle Daten werden PARALLEL geladen,
-// kein Flash of Unstyled Content, kein Laden-State, besser für SEO.
-//
-// Fix (Architektur): Doppelter Auth-Check wurde entfernt. Das Profil wird von
-// getSessionOrRedirect() im AppLayout geladen und über useSession() bereitgestellt.
-// Hier wird der Supabase Server Client direkt für Dashboard-Daten genutzt.
-
 import { getSessionOrRedirect } from '@/lib/auth/get-session'
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import {
   AlertCircle, Users, FileText
 } from 'lucide-react'
@@ -17,18 +7,16 @@ import { cn } from '@/lib/utils'
 import { NewsBoardClient } from './NewsBoardClient'
 
 export default async function DashboardPage() {
+  // Der Patienten-Redirect wird jetzt zentral in (app)/layout.tsx gehandhabt.
+  // Dieser Guard hier ist daher nicht mehr nötig.
   const profile = await getSessionOrRedirect()
 
-  // Patienten-Rolle: Redirect zur Patientenaufnahme (serverseitig, kein Flackern)
-  if (profile.role?.slug === 'patient') {
-    redirect('/patientenaufnahme')
-  }
-
   const supabase = await createClient()
-  const today = new Date()
-  const todayStr = today.toISOString().split('T')[0]
-  const startOfDay = `${todayStr}T00:00:00.000Z`
-  const endOfDay = `${todayStr}T23:59:59.999Z`
+  // Fix: Berliner Zeitzone verwenden (nicht UTC), da toISOString() UTC zurückgibt
+  // und um 23:00-23:59 Berliner Zeit bereits der nächste UTC-Tag beginnt.
+  const todayStr = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Berlin' }).format(new Date())
+  const startOfDay = `${todayStr}T00:00:00+02:00`
+  const endOfDay = `${todayStr}T23:59:59+02:00`
 
   // Fix #7: Alle Daten PARALLEL laden statt sequenziell
   const [ordersResult, shiftsResult, patientResult, newsResult] = await Promise.all([
@@ -72,7 +60,7 @@ export default async function DashboardPage() {
   const dateOptions: Intl.DateTimeFormatOptions = {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   }
-  const formattedDate = today.toLocaleDateString('de-DE', dateOptions)
+  const formattedDate = new Date().toLocaleDateString('de-DE', dateOptions)
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-8 animate-in fade-in duration-500 font-sans space-y-8">

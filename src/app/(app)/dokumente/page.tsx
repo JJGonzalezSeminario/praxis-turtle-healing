@@ -48,7 +48,7 @@ export default function DokumentencenterPage() {
     setUserId(user.id)
 
     const { data: profile } = await supabase.from('profiles').select('*, roles(name)').eq('id', user.id).single()
-    setIsAdmin(profile?.roles?.name === 'Super Admin' || profile?.roles?.name === 'IT-Admin' || profile?.roles?.name === 'Arzt / Ärztin')
+    setIsAdmin(profile?.roles?.slug === 'super_admin' || profile?.roles?.slug === 'it_admin' || profile?.roles?.slug === 'arzt')
 
     const { data: docs } = await supabase
       .from('documents')
