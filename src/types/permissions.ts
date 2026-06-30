@@ -4,13 +4,13 @@ export type PermissionResource =
   | 'qm_checklists'
   | 'wiki'
   | 'orders'
-  | 'onboarding'
   | 'documents'
   | 'contacts'
   | 'requests'
   | 'patient_intake'
   | 'user_management'
   | 'role_management'
+  | 'audit_logs'
 
 export type PermissionAction = 'view' | 'create' | 'edit' | 'delete' | 'approve' | 'export'
 

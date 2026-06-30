@@ -8,8 +8,8 @@ import { hasPermission } from '@/lib/auth/permissions'
 import type { UserProfile } from '@/types/permissions'
 import {
   LayoutDashboard, Calendar, ClipboardList, BookOpen,
-  ShoppingCart, UserCheck, FileText, NotebookTabs,
-  UserPlus, Settings, Shield
+  ShoppingCart, FileText, NotebookTabs,
+  UserPlus, Settings, Shield, FileSpreadsheet
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -29,7 +29,6 @@ const NAV_ITEMS = [
     section: 'Verwaltung',
     items: [
       { href: '/materialbestellung', label: 'Materialbestellung', icon: ShoppingCart,    resource: 'orders'          as const },
-      { href: '/onboarding',         label: 'Onboarding',         icon: UserCheck,       resource: 'onboarding'      as const },
       { href: '/dokumente',          label: 'Dokumentencenter',   icon: FileText,        resource: 'documents'       as const },
       { href: '/kontaktbuch',        label: 'Kontaktbuch',        icon: NotebookTabs,    resource: 'contacts'        as const },
       { href: '/antraege',           label: 'Urlaub & Anträge',   icon: Calendar,        resource: 'requests'        as const },
@@ -40,6 +39,7 @@ const NAV_ITEMS = [
     items: [
       { href: '/admin/nutzer', label: 'Nutzerverwaltung', icon: Settings, resource: 'user_management' as const },
       { href: '/admin/rollen', label: 'Rollen & Rechte',  icon: Shield,   resource: 'role_management' as const },
+      { href: '/admin/audit-logs', label: 'Audit-Logs',    icon: FileSpreadsheet, resource: 'audit_logs' as const },
     ]
   }
 ]

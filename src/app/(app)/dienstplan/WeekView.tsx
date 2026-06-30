@@ -6,6 +6,8 @@ import { EditShiftDialog } from './EditShiftDialog'
 import { AddShiftDialog } from './AddShiftDialog'
 import { cn } from '@/lib/utils'
 
+import { sortShifts } from '@/lib/utils'
+
 export function WeekView({ dateStr, shifts, profiles }: { dateStr: string, shifts: any[], profiles: any[] }) {
   // 1. Finde den Montag der aktuellen Woche
   const currentDate = new Date(`${dateStr}T12:00:00`)
@@ -53,7 +55,8 @@ export function WeekView({ dateStr, shifts, profiles }: { dateStr: string, shift
       {/* Das 7-Tage Raster */}
       <div className="grid grid-cols-7 divide-x divide-zinc-100 min-h-[600px]">
         {weekDays.map((day, idx) => {
-          const dayShifts = shifts.filter(s => s.date === day.isoStr)
+          const rawDayShifts = shifts.filter(s => s.date === day.isoStr)
+          const dayShifts = sortShifts(rawDayShifts)
 
           return (
             <div key={day.isoStr} className={cn("flex flex-col transition-colors", day.isToday && "bg-emerald-50/10")}>

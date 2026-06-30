@@ -38,6 +38,33 @@ export function PatientForm() {
     }
   }, [step])
 
+  // Fix #4: Prüft ob der Canvas tatsächlich etwas enthält (= Unterschrift geleistet)
+  const isCanvasEmpty = (): boolean => {
+    if (!canvasRef.current) return true
+    const ctx = canvasRef.current.getContext('2d')
+    if (!ctx) return true
+    const pixelBuffer = new Uint32Array(
+      ctx.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height).data.buffer
+    )
+    return !pixelBuffer.some(color => color !== 0)
+  }
+
+  // Fix #3: Setzt alle sensiblen Patientendaten sofort nach Abschluss zurück
+  const clearAllPatientData = () => {
+    setFormData({
+      name: '', birthDate: '', address: '', phone: '', email: '',
+      insurance: 'Gesetzlich versichert', weight: '', height: '',
+      preconditions: '', medication: '', allergies: '',
+      location: 'Berlin',
+      signatureDate: new Date().toISOString().split('T')[0]
+    })
+    setConsentInfusion(false)
+    setConsentBlood(false)
+    setTransmitData(null)
+    clearCanvas()
+    setStep(1)
+  }
+
   const startDrawing = (e: any) => {
     if (!canvasRef.current) return
     setIsDrawing(true)
@@ -80,6 +107,12 @@ export function PatientForm() {
       return
     }
     if (!canvasRef.current) return
+
+    // Fix #4: Unterschrift-Validierung — leere Fläche wird nicht akzeptiert
+    if (isCanvasEmpty()) {
+      alert('Bitte unterschreiben Sie das Formular im Signaturfeld, bevor Sie fortfahren.')
+      return
+    }
 
     const doc = new jsPDF()
     const today = new Date().toLocaleDateString('de-DE')
@@ -193,15 +226,16 @@ export function PatientForm() {
     addText('Ihre Rechte', true)
     addText('Sie haben das Recht, über die Sie betreffenden personenbezogenen Daten Auskunft zu erhalten. Auch können Sie die Berichtigung unrichtiger Daten verlangen. Darüber hinaus steht Ihnen unter bestimmten Voraussetzungen das Recht auf Löschung von Daten, das Recht auf Einschränkung der Datenverarbeitung sowie das Recht auf Datenübertragbarkeit zu. Die Verarbeitung Ihrer Daten erfolgt auf Basis von gesetzlichen Regelungen. Nur in Ausnahmefällen benötigen wir Ihr Einverständnis. In diesen Fällen haben Sie das Recht, die Einwilligung für die zukünftige Verarbeitung zu widerrufen. Sie haben ferner das Recht, sich bei der zuständigen Aufsichtsbehörde für den Datenschutz zu beschweren, wenn Sie der Ansicht sind, dass die Verarbeitung Ihrer personenbezogenen nicht rechtmäßig erfolgt.')
     addText('Rechtliche Grundlagen', true)
-    addText('Rechtsgrundlage für die Verarbeitung Ihrer Daten is Artikel 9 Abs. 2 lit.h) DSGVO in Verbindung mit §22 Abs 1 Nr.1 lit.b) Bundesdatenschutzgesetz.')
-    
+    addText('Rechtsgrundlage für die Verarbeitung Ihrer Daten ist Artikel 9 Abs. 2 lit.h) DSGVO in Verbindung mit §22 Abs 1 Nr.1 lit.b) Bundesdatenschutzgesetz.')
+
     yPos += 5
     addText('Zusatz: Digitale Patientenaufnahme per Tablet', true)
     addText('Zur Optimierung unserer Praxisabläufe und im Sinne der Nachhaltigkeit nutzen wir für die Patientenaufnahme, die Anamnese sowie für medizinische Aufklärungen und Einwilligungen ein digitales Erfassungssystem (Tablet).')
     addText('1. Art und Zweck der Verarbeitung', true)
     addText('Wenn Sie Ihre Daten über unser Praxis-Tablet eingeben, erheben wir Ihre Stammdaten sowie Gesundheitsdaten. Diese Daten dienen ausschließlich der Vorbereitung und Durchführung Ihres Behandlungsvertrages, der medizinischen Diagnostik und der gesetzlichen Dokumentationspflicht. Die von Ihnen auf dem Tablet eingegebenen Daten und Ihre digitale Unterschrift werden unmittelbar in ein verschlüsseltes PDF-Dokument umgewandelt und in Ihre elektronische Patientenakte übertragen.')
     addText('2. Speicherung und Datensicherheit', true)
-    addText('Ihre sensiblen Gesundheitsdaten werden auf dem Tablet nur für den Moment der Eingabe zwischengespeichert. Nach Abschluss der Eingabe oder bei Inaktivität werden die Daten lokal vom Gerät gelöscht. Die technische Bereitstellung der App-Oberfläche erfolgt über unseren IT-Dienstleister (Google Cloud EMEA Limited / Firebase). Die Server für diesen Dienst befinden sich innerhalb der Europäischen Union (Belgien), sodass ein hohes Datenschutzniveau gemäß der europäischen DSGVO gewährleistet ist. Mit dem Anbieter wurde ein entsprechender Vertrag zur Auftragsverarbeitung (AVV) gemäß Art. 28 DSGVO geschlossen. Es werden keine Gesundheitsdaten oder Anamnesebögen in der Cloud-Datenbank dieses Anbieters gespeichert.')
+    // Fix #5: Korrekte Nennung des tatsächlichen IT-Dienstleisters (Supabase, nicht Firebase/Google)
+    addText('Ihre sensiblen Gesundheitsdaten werden auf dem Tablet nur für den Moment der Eingabe zwischengespeichert. Nach Abschluss der Eingabe werden die Daten sofort vom Gerät gelöscht. Die technische Bereitstellung der App-Oberfläche und die Speicherung der anonymen Statistikdaten (kein Personenbezug) erfolgt über unseren IT-Dienstleister Supabase Inc. (1111B South Governors Avenue, Dover, DE 19904, USA). Mit dem Anbieter wurde ein Vertrag zur Auftragsverarbeitung (AVV) gemäß Art. 28 DSGVO geschlossen. Gesundheitsdaten und Anamnesebögen werden ausschließlich lokal als PDF-Dokument gespeichert und nicht in der Cloud abgelegt.')
     
     yPos += 5
     addText('Übermittlung von Daten/Befunden per Mail/Fax an mich:', true)
@@ -220,13 +254,16 @@ export function PatientForm() {
     const cleanName = formData.name.replace(/[^a-zA-Z0-9]/g, '_')
     doc.save(`Aufnahme_${cleanName}.pdf`)
     
-    // <-- ZÄHLER IN SUPABASE HOCHZÄHLEN
+    // Supabase-Eintrag für Statistik (nur anonymer Zähler, keine Gesundheitsdaten)
     try {
       await supabase.from('patient_intakes').insert([{}])
     } catch (err) {
       console.error("Fehler beim Hochzählen im Dashboard:", err)
     }
-    
+
+    // Fix #3: Alle sensiblen Patientendaten SOFORT aus dem State entfernen,
+    // bevor der Erfolgs-Screen angezeigt wird. Erfüllt die Datenschutzerklärung.
+    clearAllPatientData()
     setIsSuccess(true)
   }
 
@@ -241,7 +278,7 @@ export function PatientForm() {
           Ihre Daten wurden erfolgreich erfasst und das verschlüsselte PDF-Dokument für die Praxis generiert. Bitte geben Sie das Tablet nun an den Empfang zurück.
         </p>
         <button 
-          onClick={() => window.location.reload()} 
+          onClick={() => { setIsSuccess(false) }} 
           className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-10 rounded-xl shadow-lg transition text-lg w-full sm:w-auto"
         >
           Nächster Patient
@@ -470,7 +507,8 @@ export function PatientForm() {
                   <p>Wenn Sie Ihre Daten über unser Praxis-Tablet eingeben, erheben wir Ihre Stammdaten sowie Gesundheitsdaten. Diese Daten dienen ausschließlich der Vorbereitung und Durchführung Ihres Behandlungsvertrages, der medizinischen Diagnostik und der gesetzlichen Dokumentationspflicht. Die von Ihnen auf dem Tablet eingegebenen Daten und Ihre digitale Unterschrift werden unmittelbar in ein verschlüsseltes PDF-Dokument umgewandelt und in Ihre elektronische Patientenakte übertragen.</p>
                   
                   <h4 className="font-bold text-zinc-900 mt-4 mb-2">2. Speicherung und Datensicherheit</h4>
-                  <p>Ihre sensiblen Gesundheitsdaten werden auf dem Tablet nur für den Moment der Eingabe zwischengespeichert. Nach Abschluss der Eingabe oder bei Inaktivität werden die Daten lokal vom Gerät gelöscht. Die technische Bereitstellung der App-Oberfläche erfolgt über unseren IT-Dienstleister (Google Cloud EMEA Limited / Firebase). Die Server für diesen Dienst befinden sich innerhalb der Europäischen Union (Belgien), sodass ein hohes Datenschutzniveau gemäß der europäischen DSGVO gewährleistet ist. Mit dem Anbieter wurde ein entsprechender Vertrag zur Auftragsverarbeitung (AVV) gemäß Art. 28 DSGVO geschlossen. Es werden keine Gesundheitsdaten oder Anamnesebögen in der Cloud-Datenbank dieses Anbieters gespeichert.</p>
+                  {/* Fix #5: Korrekte Nennung des tatsächlichen IT-Dienstleisters (Supabase, nicht Firebase) */}
+                  <p>Ihre sensiblen Gesundheitsdaten werden auf dem Tablet nur für den Moment der Eingabe zwischengespeichert. Nach Abschluss der Eingabe werden die Daten sofort und unwiderruflich vom Gerät gelöscht. Die technische Bereitstellung der App-Oberfläche und die Speicherung der anonymen Statistikdaten (kein Personenbezug) erfolgt über unseren IT-Dienstleister Supabase Inc. (1111B South Governors Avenue, Dover, DE 19904, USA). Mit dem Anbieter wurde ein Vertrag zur Auftragsverarbeitung (AVV) gemäß Art. 28 DSGVO geschlossen. Gesundheitsdaten und Anamnesebögen werden ausschließlich lokal als PDF-Dokument gespeichert und nicht in der Cloud abgelegt.</p>
               </div>
             </div>
 

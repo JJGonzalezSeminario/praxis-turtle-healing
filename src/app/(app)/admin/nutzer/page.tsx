@@ -109,7 +109,8 @@ export default function NutzerverwaltungPage() {
 
   const openPasswordModal = (user: any) => {
     setSelectedUser(user)
-    setFormData({ ...formData, password: '' })
+    // Komplett neuen State setzen, damit keine veralteten Werte übernommen werden
+    setFormData({ email: '', password: '', full_name: '', role_id: '', is_active: true })
     setActiveModal('password')
   }
 
@@ -269,7 +270,7 @@ export default function NutzerverwaltungPage() {
               {(activeModal === 'create' || activeModal === 'password') && (
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-zinc-500 uppercase">Startpasswort (mind. 6 Zeichen)</label>
-                  <input type="text" required minLength={6} placeholder="z.B. Turtle2026!" className="w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-indigo-500 font-medium text-zinc-800" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} disabled={isSubmitting} />
+                  <input type="password" required minLength={8} autoComplete="new-password" placeholder="Mind. 8 Zeichen" className="w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-indigo-500 font-medium text-zinc-800" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} disabled={isSubmitting} />
                   {activeModal === 'password' && <p className="text-xs text-zinc-500 mt-1">Der Nutzer kann sich ab sofort nur noch mit diesem neuen Passwort einloggen.</p>}
                 </div>
               )}

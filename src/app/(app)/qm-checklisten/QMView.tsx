@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { ClipboardList, Lock, FlaskConical, Sun, ArrowRight, ArrowLeft, Check, Repeat, Activity, ChevronRight, ChevronLeft } from 'lucide-react'
+import { ClipboardList, Lock, FlaskConical, Sun, ArrowRight, ArrowLeft, Check, Repeat, Activity, ChevronRight, ChevronLeft, Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const ICON_MAP: Record<string, any> = {
@@ -11,6 +11,7 @@ const ICON_MAP: Record<string, any> = {
   'flask-conical': FlaskConical,
   'sun': Sun,
   'activity': Activity,
+  'calendar': Calendar,
   'default': ClipboardList
 }
 

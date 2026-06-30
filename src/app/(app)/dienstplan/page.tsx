@@ -10,7 +10,7 @@ import { DayView } from './DayView'
 import { WeekView } from './WeekView'
 import { PrintButton } from './PrintButton'
 import { getBerlinHolidays } from '@/lib/holidays'
-import { cn } from '@/lib/utils'
+import { cn, sortShifts } from '@/lib/utils'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 type Props = {
@@ -145,7 +145,7 @@ export default async function DienstplanPage({ searchParams }: Props) {
       {currentView === 'tag' && (
         <DayView 
           dateStr={params.date || new Date().toISOString().split('T')[0]} 
-          shifts={shifts} 
+          shifts={sortShifts(shifts)} 
           profiles={profiles || []} 
         />
       )}
@@ -153,7 +153,7 @@ export default async function DienstplanPage({ searchParams }: Props) {
       {currentView === 'woche' && (
         <WeekView 
           dateStr={params.date || new Date().toISOString().split('T')[0]} 
-          shifts={shifts} 
+          shifts={sortShifts(shifts)} 
           profiles={profiles || []} 
         />
       )}
@@ -174,7 +174,8 @@ export default async function DienstplanPage({ searchParams }: Props) {
               {/* Raster: Auf dem Handy reichen 80px Höhe, am PC 140px */}
               <div className="grid grid-cols-7 flex-1 divide-x divide-y divide-zinc-100 auto-rows-[minmax(80px,_1fr)] sm:auto-rows-[minmax(140px,_1fr)] print:auto-rows-auto print:divide-zinc-300">
                 {calendarCells.map((cell, idx) => {
-                  const dayShifts = shifts.filter((s: any) => s.date === cell.dateStr)
+                  const rawDayShifts = shifts.filter((s: any) => s.date === cell.dateStr)
+                  const dayShifts = sortShifts(rawDayShifts)
                   const holiday = holidays.find(h => h.date === cell.dateStr)
 
                   if (!cell.dayNum) {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight, UserCircle2 } from 'lucide-react'
 import { EditShiftDialog } from './EditShiftDialog'
+import { sortShifts } from '@/lib/utils'
 
 export function DayView({ dateStr, shifts, profiles }: { dateStr: string, shifts: any[], profiles: any[] }) {
   // Zustand für die aktuelle Uhrzeit (wird jede Minute aktualisiert)
@@ -29,7 +30,11 @@ export function DayView({ dateStr, shifts, profiles }: { dateStr: string, shifts
   const activeShifts = dayShifts.filter(s => s.status === 'aktiv')
   const absentShifts = dayShifts.filter(s => s.status !== 'aktiv')
 
-  const shiftsByUser = activeShifts.reduce((acc: any, shift: any) => {
+  // Zuerst nach Rollen sortieren, bevor nach User gruppiert wird.
+  // Das stellt sicher, dass Object.entries(shiftsByUser) die richtige Reihenfolge einhält.
+  const sortedActiveShifts = sortShifts(activeShifts)
+
+  const shiftsByUser = sortedActiveShifts.reduce((acc: any, shift: any) => {
     if (!acc[shift.user_id]) acc[shift.user_id] = []
     acc[shift.user_id].push(shift)
     return acc
