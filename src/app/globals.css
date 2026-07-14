@@ -127,5 +127,39 @@
   html {
     @apply font-sans;
   }
+
+  /* ♿ WCAG 2.4.7: Sichtbarer Fokus-Stil für Tastaturnavigation
+     outline-none in Komponenten ist OK, solange focus-visible greift. */
+  *:focus-visible {
+    outline: 2px solid #0d9488; /* teal-600 */
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
+/* Skeleton-Shimmer-Animation für Loading-States */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f4f4f5 25%,
+    #e4e4e7 50%,
+    #f4f4f5 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+/* Scrollbar-Styling für horizontale Scroll-Container */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d8 transparent;
+}
+.custom-scrollbar::-webkit-scrollbar { height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 999px; }

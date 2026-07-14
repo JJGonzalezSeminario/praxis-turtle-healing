@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -52,6 +53,48 @@ export function Sidebar({ profile, className }: { profile: UserProfile, classNam
   const roleName = (profile as any)?.roles?.name || 'Mitarbeiter'
   const router = useRouter()
   const supabase = createClient()
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0)
+
+  const isAdmin =
+    profile.role?.slug === 'super_admin' ||
+    profile.role?.slug === 'arzt' ||
+    profile.role?.slug === 'it_admin'
+
+  useEffect(() => {
+    if (!isAdmin) return
+
+    // 1. Initial count abrufen
+    const fetchPendingCount = async () => {
+      const { count, error } = await supabase
+        .from('requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'ausstehend')
+      if (!error && count !== null) {
+        setPendingRequestsCount(count)
+      }
+    }
+    fetchPendingCount()
+
+    // 2. Realtime-Subscription einrichten
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'requests',
+        },
+        () => {
+          fetchPendingCount()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [isAdmin, supabase])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -102,19 +145,27 @@ export function Sidebar({ profile, className }: { profile: UserProfile, classNam
                 {visibleItems.map(item => {
                   const Icon = item.icon
                   const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                  const isRequestsItem = item.href === '/antraege'
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-all duration-200',
+                        'flex items-center justify-between px-3 py-2 rounded-lg text-[13px] transition-all duration-200',
                         isActive
                           ? 'bg-emerald-50 text-emerald-800 font-semibold shadow-sm'
                           : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 font-medium'
                       )}
                     >
-                      <Icon size={16} className={cn("shrink-0", isActive ? "text-emerald-600" : "text-zinc-400")} />
-                      {item.label}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Icon size={16} className={cn("shrink-0", isActive ? "text-emerald-600" : "text-zinc-400")} />
+                        <span className="truncate">{item.label}</span>
+                      </div>
+                      {isRequestsItem && pendingRequestsCount > 0 && (
+                        <span className="bg-rose-500 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shrink-0 min-w-[18px] text-center animate-pulse">
+                          {pendingRequestsCount}
+                        </span>
+                      )}
                     </Link>
                   )
                 })}
