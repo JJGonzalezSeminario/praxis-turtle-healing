@@ -13,6 +13,50 @@ const CATEGORY_STYLES: Record<string, { color: string, bg: string, border: strin
   'default': { color: 'text-indigo-700', bg: 'bg-indigo-100/50', border: 'border-indigo-500', icon: Folder }
 }
 
+function renderContent(content: string) {
+  if (!content) return null
+  
+  // Standard Markdown-Bildsyntax parsen: ![alt](/pfad)
+  const regex = /!\[(.*?)\]\((.*?)\)/g
+  const parts = []
+  let lastIndex = 0
+  let match
+
+  while ((match = regex.exec(content)) !== null) {
+    const textBefore = content.substring(lastIndex, match.index)
+    if (textBefore) {
+      parts.push(
+        <span key={lastIndex} className="whitespace-pre-wrap">
+          {textBefore}
+        </span>
+      )
+    }
+    const alt = match[1]
+    const src = match[2]
+    parts.push(
+      <div key={match.index} className="my-4 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 shadow-sm transition-transform hover:scale-[1.01]">
+        <img 
+          src={src} 
+          alt={alt} 
+          className="max-h-[300px] w-full object-contain mx-auto" 
+        />
+      </div>
+    )
+    lastIndex = regex.lastIndex
+  }
+
+  const textAfter = content.substring(lastIndex)
+  if (textAfter) {
+    parts.push(
+      <span key={lastIndex} className="whitespace-pre-wrap">
+        {textAfter}
+      </span>
+    )
+  }
+
+  return parts
+}
+
 export function WikiView({ categories, entries: initialEntries }: { categories: any[], entries: any[] }) {
   const supabase = createClient()
   
@@ -159,8 +203,8 @@ export function WikiView({ categories, entries: initialEntries }: { categories: 
                   </div>
                   
                   <h3 className="text-xl font-extrabold text-zinc-900 mb-3 relative z-10">{entry.title}</h3>
-                  <div className="text-zinc-600 font-medium leading-relaxed whitespace-pre-wrap text-sm relative z-10">
-                    {entry.content}
+                  <div className="text-zinc-600 font-medium leading-relaxed text-sm relative z-10 flex flex-col">
+                    {renderContent(entry.content)}
                   </div>
                 </div>
               </div>

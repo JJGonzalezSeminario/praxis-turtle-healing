@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { ClipboardList, Lock, FlaskConical, Sun, ArrowRight, ArrowLeft, Check, Repeat, Activity, ChevronRight, ChevronLeft, Calendar } from 'lucide-react'
+import { ClipboardList, Lock, FlaskConical, Sun, ArrowRight, ArrowLeft, Check, Repeat, Activity, ChevronRight, ChevronLeft, Calendar, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const ICON_MAP: Record<string, any> = {
@@ -26,6 +26,7 @@ const COLORS = [
 export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
   const [activeListId, setActiveListId] = useState<string | null>(null)
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({})
+  const [searchTerm, setSearchTerm] = useState('')
   
   // States für den Bild-Viewer
   const [activeGuide, setActiveGuide] = useState<{ images: string[], taskText: string, taskId: string } | null>(null)
@@ -199,62 +200,93 @@ export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
     )
   }
 
+  const filteredChecklists = initialChecklists.filter(list => 
+    list.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (list.description && list.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    list.checklist_items.some((item: any) => item.task_text.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+
   // ---------------------------------------------
   // HAUPT-ANSICHT (KACHELN)
   // ---------------------------------------------
   return (
     <div className="animate-in fade-in duration-500">
-      <div className="flex items-center gap-3 mb-8">
-        <ClipboardList className="text-emerald-600" size={32} />
-        <h1 className="text-3xl font-extrabold text-zinc-900 tracking-tight">QM-Checklisten</h1>
+      <div className="flex items-center justify-between flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex items-center gap-3">
+          <ClipboardList className="text-emerald-600" size={32} />
+          <h1 className="text-3xl font-extrabold text-zinc-900 tracking-tight">QM-Checklisten</h1>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {initialChecklists.map((list, idx) => {
-          const color = COLORS[idx % COLORS.length]
-          const Icon = ICON_MAP[list.icon] || ICON_MAP['default']
-          
-          const totalTasks = list.checklist_items.length
-          const doneTasks = list.checklist_items.filter((item: any) => checkedItems[item.id]).length
-          const progress = totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 100)
-
-          return (
-            <div 
-              key={list.id} 
-              onClick={() => setActiveListId(list.id)} 
-              className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-200/80 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <div className={cn("p-4 rounded-2xl shadow-sm transition group-hover:scale-110", color.bg, color.text)}>
-                    <Icon size={28} />
-                  </div>
-                  <div className="text-zinc-300 group-hover:text-zinc-500 transition">
-                    <ArrowRight />
-                  </div>
-                </div>
-                <h3 className="font-extrabold text-xl text-zinc-800 mb-1">{list.title}</h3>
-                <p className="text-sm text-zinc-500 font-medium mb-6 line-clamp-2">{list.description}</p>
-              </div>
-              
-              <div>
-                <div className="flex justify-between text-xs font-bold text-zinc-400 mb-2">
-                  <span>Status</span>
-                  <span className={progress === 100 ? 'text-emerald-600' : ''}>
-                    {doneTasks} / {totalTasks} erledigt
-                  </span>
-                </div>
-                <div className="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden">
-                  <div 
-                    className={cn("h-full transition-all duration-500", progress === 100 ? 'bg-emerald-500' : color.text.replace('text-', 'bg-'))} 
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-          )
-        })}
+      {/* SUCHLEISTE: Schwebender Effekt */}
+      <div className="relative mb-10 group">
+        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+          <Search className="text-zinc-400 group-focus-within:text-emerald-600 transition-colors" size={22} />
+        </div>
+        <input 
+          type="text"
+          placeholder="Suchen nach Checklisten, Beschreibungen oder Aufgaben..."
+          className="w-full pl-12 pr-4 py-4 rounded-2xl border-0 ring-1 ring-zinc-200 shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all bg-white text-lg placeholder:text-zinc-400"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
+
+      {filteredChecklists.length === 0 ? (
+        <div className="text-center py-16 bg-white rounded-3xl border border-zinc-200 border-dashed">
+          <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Search className="text-zinc-400" size={28} />
+          </div>
+          <p className="text-zinc-500 font-medium text-lg">Keine Checklisten für diese Suche gefunden.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredChecklists.map((list, idx) => {
+            const color = COLORS[idx % COLORS.length]
+            const Icon = ICON_MAP[list.icon] || ICON_MAP['default']
+            
+            const totalTasks = list.checklist_items.length
+            const doneTasks = list.checklist_items.filter((item: any) => checkedItems[item.id]).length
+            const progress = totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 100)
+
+            return (
+              <div 
+                key={list.id} 
+                onClick={() => setActiveListId(list.id)} 
+                className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-200/80 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex justify-between items-start mb-4">
+                    <div className={cn("p-4 rounded-2xl shadow-sm transition group-hover:scale-110", color.bg, color.text)}>
+                      <Icon size={28} />
+                    </div>
+                    <div className="text-zinc-300 group-hover:text-zinc-500 transition">
+                      <ArrowRight />
+                    </div>
+                  </div>
+                  <h3 className="font-extrabold text-xl text-zinc-800 mb-1">{list.title}</h3>
+                  <p className="text-sm text-zinc-500 font-medium mb-6 line-clamp-2">{list.description}</p>
+                </div>
+                
+                <div>
+                  <div className="flex justify-between text-xs font-bold text-zinc-400 mb-2">
+                    <span>Status</span>
+                    <span className={progress === 100 ? 'text-emerald-600' : ''}>
+                      {doneTasks} / {totalTasks} erledigt
+                    </span>
+                  </div>
+                  <div className="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden">
+                    <div 
+                      className={cn("h-full transition-all duration-500", progress === 100 ? 'bg-emerald-500' : color.text.replace('text-', 'bg-'))} 
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
