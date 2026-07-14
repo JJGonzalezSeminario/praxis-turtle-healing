@@ -96,6 +96,15 @@ export async function createUser(data: CreateUserData) {
     return { error: e.message }
   }
 
+  // MITTEL-3: Passwort-Stärkenvalidierung (analog zu resetPassword)
+  if (!data.password || data.password.length < 8) {
+    return { error: 'Das Passwort muss mindestens 8 Zeichen lang sein.' }
+  }
+  const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/
+  if (!passwordRegex.test(data.password)) {
+    return { error: 'Das Passwort muss mindestens einen Großbuchstaben und eine Zahl enthalten.' }
+  }
+
   try {
     const supabaseAdmin = getAdminClient()
 

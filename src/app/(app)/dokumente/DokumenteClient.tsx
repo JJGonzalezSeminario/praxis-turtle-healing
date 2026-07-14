@@ -55,6 +55,13 @@ export function DokumenteClient({ initialDocuments, isAdmin, userId }: Props) {
       return
     }
 
+    // HOCH-3: Dateigrößen-Limit (clientseitige erste Verteidigungslinie, 25 MB)
+    const MAX_FILE_SIZE_MB = 25
+    if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      alert(`Die Datei ist zu groß. Bitte lade nur Dateien bis maximal ${MAX_FILE_SIZE_MB} MB hoch.`)
+      return
+    }
+
     if (selectedFile.type !== 'application/pdf') {
       alert('Bitte nur PDF-Dateien hochladen!')
       return
@@ -100,7 +107,8 @@ export function DokumenteClient({ initialDocuments, isAdmin, userId }: Props) {
       if (fileInputRef.current) fileInputRef.current.value = ''
 
     } catch (error: any) {
-      alert('Fehler beim Hochladen: ' + error.message)
+      alert('Ein Fehler ist aufgetreten. Bitte versuche es erneut oder wende dich an den IT-Support.')
+      console.error('Upload-Fehler:', error)
     } finally {
       setIsUploading(false)
       setUploadProgress(0)

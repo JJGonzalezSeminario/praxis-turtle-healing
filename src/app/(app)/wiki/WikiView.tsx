@@ -31,17 +31,35 @@ function renderContent(content: string) {
         </span>
       )
     }
-    const alt = match[1]
+    // Sicherheit: alt-Text von gefährlichen Zeichen bereinigen
+    const alt = match[1].replace(/[<>"']/g, '')
     const src = match[2]
-    parts.push(
-      <div key={match.index} className="my-4 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 shadow-sm transition-transform hover:scale-[1.01]">
-        <img 
-          src={src} 
-          alt={alt} 
-          className="max-h-[300px] w-full object-contain mx-auto" 
-        />
-      </div>
-    )
+
+    // Sicherheit: Nur relative Pfade und vertrauenswürdige Supabase-URLs erlauben
+    // Verhindert javascript:, data:, externe Tracker-URLs etc.
+    const isAllowedSrc =
+      src.startsWith('/') ||
+      src.startsWith('https://rgbakpsyxronsqeyzuaf.supabase.co')
+
+    if (!isAllowedSrc) {
+      // Unsichere URL: als Text ausgeben, nicht als Bild rendern
+      parts.push(
+        <span key={match.index} className="whitespace-pre-wrap text-rose-500 text-xs">
+          [Bild nicht geladen: ungültige URL]
+        </span>
+      )
+    } else {
+      parts.push(
+        <div key={match.index} className="my-4 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 shadow-sm transition-transform hover:scale-[1.01]">
+          <img 
+            src={src} 
+            alt={alt} 
+            referrerPolicy="no-referrer"
+            className="max-h-[300px] w-full object-contain mx-auto" 
+          />
+        </div>
+      )
+    }
     lastIndex = regex.lastIndex
   }
 
@@ -56,6 +74,7 @@ function renderContent(content: string) {
 
   return parts
 }
+
 
 export function WikiView({ categories, entries: initialEntries }: { categories: any[], entries: any[] }) {
   const supabase = createClient()

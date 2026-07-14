@@ -35,8 +35,8 @@ export default function NutzerverwaltungPage() {
     const { data: rolesData } = await supabase.from('roles').select('*').order('name')
     setRoles(rolesData || [])
 
-    // Profile laden
-    const { data: profilesData } = await supabase.from('profiles').select('*, roles(name)').order('full_name')
+    // Profile laden (inkl. slug für konsistente Rollenprüfung)
+    const { data: profilesData } = await supabase.from('profiles').select('*, roles(name, slug)').order('full_name')
     setProfiles(profilesData || [])
     
     setLoading(false)
