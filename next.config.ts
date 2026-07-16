@@ -35,8 +35,8 @@ const securityHeaders = [
           "default-src 'self'",
           // Bilder: nur eigene Domain, Supabase Storage und Data-URIs
           `img-src 'self' data: blob: https://${supabaseHost}`,
-          // Videos/Audio: erlauben von eigener Domain
-          "media-src 'self'",
+          // Videos/Audio: erlauben von eigener Domain und Supabase Storage
+          `media-src 'self' https://${supabaseHost}`,
           // Verbindungen: eigene Domain + Supabase (inkl. WebSocket für Realtime)
           `connect-src 'self' https://${supabaseHost} wss://${supabaseHost}`,
           // Skripte: 'unsafe-inline' & 'unsafe-eval' für Next.js/React erforderlich

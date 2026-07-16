@@ -23,14 +23,16 @@ const COLORS = [
   { text: 'text-fuchsia-600', bg: 'bg-fuchsia-50', border: 'border-fuchsia-200' },
 ]
 
+const STORAGE_BASE = 'https://rgbakpsyxronsqeyzuaf.supabase.co/storage/v1/object/public/qm-videos'
+
 const OHT_MEDIA = [
-  { type: 'video', title: 'Schulungsvideo 1: Vorbereitung', url: '/OHT-Infusion/oht_1_vorbereitung.mp4' },
-  { type: 'video', title: 'Schulungsvideo 2: Füllung Oval', url: '/OHT-Infusion/oht_2_fuellung_oval.mp4' },
-  { type: 'image', title: 'Zusatzbild 3: Starten', url: '/OHT-Infusion/oht_3_starten.jpg' },
-  { type: 'image', title: 'Zusatzbild 4: Ozon-Konzentration', url: '/OHT-Infusion/oht_4_ozon.jpg' },
-  { type: 'video', title: 'Schulungsvideo 5: Entleeren Oval', url: '/OHT-Infusion/oht_5_entleeren_oval.mp4' },
-  { type: 'video', title: 'Schulungsvideo 6: Beenden', url: '/OHT-Infusion/oht_6_beenden.mp4' },
-  { type: 'video', title: 'Schulungsvideo 7: Vitamin C Infusion', url: '/OHT-Infusion/oht_7_vit_c_infusion.mp4' },
+  { type: 'video', title: 'Schulungsvideo 1: Vorbereitung', url: `${STORAGE_BASE}/oht_1_vorbereitung.mp4` },
+  { type: 'video', title: 'Schulungsvideo 2: Füllung Oval', url: `${STORAGE_BASE}/oht_2_fuellung_oval.mp4` },
+  { type: 'image', title: 'Zusatzbild 3: Starten', url: `${STORAGE_BASE}/oht_3_starten.jpg` },
+  { type: 'image', title: 'Zusatzbild 4: Ozon-Konzentration', url: `${STORAGE_BASE}/oht_4_ozon.jpg` },
+  { type: 'video', title: 'Schulungsvideo 5: Entleeren Oval', url: `${STORAGE_BASE}/oht_5_entleeren_oval.mp4` },
+  { type: 'video', title: 'Schulungsvideo 6: Beenden', url: `${STORAGE_BASE}/oht_6_beenden.mp4` },
+  { type: 'video', title: 'Schulungsvideo 7: Vitamin C Infusion', url: `${STORAGE_BASE}/oht_7_vit_c_infusion.mp4` },
 ]
 
 export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
