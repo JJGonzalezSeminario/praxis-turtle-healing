@@ -23,16 +23,28 @@ const COLORS = [
   { text: 'text-fuchsia-600', bg: 'bg-fuchsia-50', border: 'border-fuchsia-200' },
 ]
 
-const STORAGE_BASE = 'https://github.com/JJGonzalezSeminario/praxis-turtle-healing/releases/download/v1.0.0-media'
+function getYouTubeEmbedUrl(url: string) {
+  if (!url) return null
+  if (url.includes('youtube.com/embed/')) return url
+  let videoId = ''
+  if (url.includes('youtube.com/watch')) {
+    const parts = url.split('?')[1] || ''
+    const urlParams = new URLSearchParams(parts)
+    videoId = urlParams.get('v') || ''
+  } else if (url.includes('youtu.be/')) {
+    videoId = url.split('youtu.be/')[1]?.split('?')[0] || ''
+  }
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : null
+}
 
 const OHT_MEDIA = [
-  { type: 'video', title: 'Schulungsvideo 1: Vorbereitung', url: `${STORAGE_BASE}/oht_1_vorbereitung.mp4` },
-  { type: 'video', title: 'Schulungsvideo 2: Füllung Oval', url: `${STORAGE_BASE}/oht_2_fuellung_oval.mp4` },
-  { type: 'image', title: 'Zusatzbild 3: Starten', url: `${STORAGE_BASE}/oht_3_starten.jpg` },
-  { type: 'image', title: 'Zusatzbild 4: Ozon-Konzentration', url: `${STORAGE_BASE}/oht_4_ozon.jpg` },
-  { type: 'video', title: 'Schulungsvideo 5: Entleeren Oval', url: `${STORAGE_BASE}/oht_5_entleeren_oval.mp4` },
-  { type: 'video', title: 'Schulungsvideo 6: Beenden', url: `${STORAGE_BASE}/oht_6_beenden.mp4` },
-  { type: 'video', title: 'Schulungsvideo 7: Vitamin C Infusion', url: `${STORAGE_BASE}/oht_7_vit_c_infusion.mp4` },
+  { type: 'video', title: 'Schulungsvideo 1: Vorbereitung', url: '/OHT-Infusion/oht_1_vorbereitung.mp4' },
+  { type: 'video', title: 'Schulungsvideo 2: Füllung Oval', url: '/OHT-Infusion/oht_2_fuellung_oval.mp4' },
+  { type: 'image', title: 'Zusatzbild 3: Starten', url: '/OHT-Infusion/oht_3_starten.jpg' },
+  { type: 'image', title: 'Zusatzbild 4: Ozon-Konzentration', url: '/OHT-Infusion/oht_4_ozon.jpg' },
+  { type: 'video', title: 'Schulungsvideo 5: Entleeren Oval', url: '/OHT-Infusion/oht_5_entleeren_oval.mp4' },
+  { type: 'video', title: 'Schulungsvideo 6: Beenden', url: '/OHT-Infusion/oht_6_beenden.mp4' },
+  { type: 'video', title: 'Schulungsvideo 7: Vitamin C Infusion', url: '/OHT-Infusion/oht_7_vit_c_infusion.mp4' },
 ]
 
 export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
@@ -278,7 +290,14 @@ export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
               </div>
               
               <div className="flex-1 bg-zinc-950 flex items-center justify-center overflow-hidden p-2 min-h-[300px]">
-                {activeMedia.type === 'video' ? (
+                {getYouTubeEmbedUrl(activeMedia.url) ? (
+                  <iframe 
+                    src={getYouTubeEmbedUrl(activeMedia.url)!} 
+                    className="w-full aspect-video rounded-2xl border-0 max-h-[70vh]" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen
+                  />
+                ) : activeMedia.type === 'video' ? (
                   <video 
                     src={encodeURI(activeMedia.url)} 
                     controls 
@@ -410,7 +429,14 @@ export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
             </div>
             
             <div className="flex-1 bg-zinc-950 flex items-center justify-center overflow-hidden p-2 min-h-[300px]">
-              {activeMedia.type === 'video' ? (
+              {getYouTubeEmbedUrl(activeMedia.url) ? (
+                <iframe 
+                  src={getYouTubeEmbedUrl(activeMedia.url)!} 
+                  className="w-full aspect-video rounded-2xl border-0 max-h-[70vh]" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                />
+              ) : activeMedia.type === 'video' ? (
                 <video 
                   src={encodeURI(activeMedia.url)} 
                   controls 

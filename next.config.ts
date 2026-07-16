@@ -45,8 +45,8 @@ const securityHeaders = [
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           // Schriften: eigene Domain + Google Fonts CDN
           "font-src 'self' https://fonts.gstatic.com",
-          // Dateien (für PDF-Viewer): Supabase Storage erlauben
-          `frame-src 'self' https://${supabaseHost}`,
+          // Dateien (für PDF-Viewer) & YouTube Embeds erlauben
+          `frame-src 'self' https://${supabaseHost} https://www.youtube.com https://youtube.com`,
           // Kein Einbetten in fremde Seiten
           "frame-ancestors 'none'",
         ].join('; '),
