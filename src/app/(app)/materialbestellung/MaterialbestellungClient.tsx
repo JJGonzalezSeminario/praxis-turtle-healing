@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   ShoppingCart, List, Search, Plus, Printer,
   CheckCircle2, AlertCircle, X, Check, Trash2, Hash, Clock,
-  ChevronDown, ChevronRight, ExternalLink, Package, Pill
+  ChevronDown, ChevronRight, ExternalLink, Package, Pill, Pencil, Save
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -87,12 +87,14 @@ function CategorySection({
   items,
   onToggle,
   onDelete,
+  onEdit,
   defaultOpen,
 }: {
   category: string
   items: InventoryItem[]
   onToggle: (id: string, status: string) => void
   onDelete: (id: string) => void
+  onEdit: (item: InventoryItem) => void
   defaultOpen: boolean
 }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -200,12 +202,22 @@ function CategorySection({
                   </div>
                 </div>
 
-                <button
-                  onClick={() => onDelete(item.id)}
-                  className='p-2 text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors sm:opacity-0 group-hover:opacity-100'
-                >
-                  <Trash2 size={16} />
-                </button>
+                <div className='flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity'>
+                  <button
+                    onClick={() => onEdit(item)}
+                    className='p-2 text-zinc-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors'
+                    title='Bearbeiten'
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button
+                    onClick={() => onDelete(item.id)}
+                    className='p-2 text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors'
+                    title='Löschen'
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             )
           })}
@@ -227,6 +239,37 @@ export function MaterialbestellungClient({ initialInventory, initialOrders, isAd
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newItem, setNewItem] = useState({ name: '', category: 'Medizinisch', pzn: '', min_stock: 1, shop_url: '' })
+
+  const [editItem, setEditItem] = useState<InventoryItem | null>(null)
+  const [editForm, setEditForm] = useState({ name: '', category: '', pzn: '', min_stock: 1, shop_url: '' })
+
+  const openEdit = (item: InventoryItem) => {
+    setEditItem(item)
+    setEditForm({
+      name: item.name,
+      category: item.category,
+      pzn: item.pzn || '',
+      min_stock: item.min_stock || 1,
+      shop_url: item.shop_url || '',
+    })
+  }
+
+  const saveEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editItem) return
+    const updated = {
+      name: editForm.name,
+      category: editForm.category,
+      pzn: editForm.pzn || null,
+      min_stock: editForm.min_stock,
+      shop_url: editForm.shop_url || null,
+    }
+    const { error } = await supabase.from('inventory').update(updated).eq('id', editItem.id)
+    if (!error) {
+      setInventory(inventory.map(i => i.id === editItem.id ? { ...i, ...updated } : i))
+      setEditItem(null)
+    }
+  }
 
   const toggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'ok' ? 'offen' : 'ok'
@@ -455,6 +498,7 @@ export function MaterialbestellungClient({ initialInventory, initialOrders, isAd
                   items={items}
                   onToggle={toggleStatus}
                   onDelete={deleteItem}
+                  onEdit={openEdit}
                   defaultOpen={criticalCategoriesOpen.has(cat) || cat === categoriesInUse[0]}
                 />
               ))}
@@ -622,6 +666,54 @@ export function MaterialbestellungClient({ initialInventory, initialOrders, isAd
 
               <button type='submit' className='w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-amber-500/20 transition-transform active:scale-95 mt-4'>
                 Im Lager speichern
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* === MODAL: Artikel bearbeiten === */}
+      {editItem && (
+        <div className='fixed inset-0 bg-zinc-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in print:hidden' onClick={() => setEditItem(null)}>
+          <div className='bg-white rounded-[2rem] shadow-2xl w-full max-w-md border border-zinc-200 overflow-hidden flex flex-col' onClick={e => e.stopPropagation()}>
+            <div className='flex justify-between items-center p-6 border-b border-zinc-100 bg-indigo-50/50'>
+              <h2 className='text-xl font-extrabold text-zinc-900 flex items-center gap-2'>
+                <Pencil className='text-indigo-600' size={22} /> Artikel bearbeiten
+              </h2>
+              <button onClick={() => setEditItem(null)} className='p-2 text-zinc-400 hover:bg-zinc-200 rounded-full transition'><X size={20} /></button>
+            </div>
+
+            <form onSubmit={saveEdit} className='p-6 space-y-4'>
+              <div className='space-y-1'>
+                <label className='text-xs font-bold text-zinc-500 uppercase'>Artikelbezeichnung *</label>
+                <input type='text' required className='w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-indigo-500 font-medium text-zinc-800 bg-white' value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
+              </div>
+
+              <div className='space-y-1'>
+                <label className='text-xs font-bold text-zinc-500 uppercase'>Kategorie</label>
+                <select className='w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-indigo-500 font-bold text-zinc-800 bg-white' value={editForm.category} onChange={e => setEditForm({ ...editForm, category: e.target.value })}>
+                  {CATEGORIES.filter(c => c !== 'Alle').map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div className='grid grid-cols-2 gap-4'>
+                <div className='space-y-1'>
+                  <label className='text-xs font-bold text-zinc-500 uppercase'>PZN (Optional)</label>
+                  <input type='text' placeholder='12345678' className='w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-indigo-500 font-mono text-zinc-800 bg-white' value={editForm.pzn} onChange={e => setEditForm({ ...editForm, pzn: e.target.value })} />
+                </div>
+                <div className='space-y-1'>
+                  <label className='text-xs font-bold text-zinc-500 uppercase'>Mindestbestand</label>
+                  <input type='number' min='1' required className='w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-indigo-500 font-medium text-zinc-800 bg-white' value={editForm.min_stock} onChange={e => setEditForm({ ...editForm, min_stock: parseInt(e.target.value) || 1 })} />
+                </div>
+              </div>
+
+              <div className='space-y-1'>
+                <label className='text-xs font-bold text-zinc-500 uppercase'>Shop-URL (Optional)</label>
+                <input type='url' placeholder='https://www.apotheke.de' className='w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-indigo-500 font-medium text-zinc-800 bg-white' value={editForm.shop_url} onChange={e => setEditForm({ ...editForm, shop_url: e.target.value })} />
+              </div>
+
+              <button type='submit' className='w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-500/20 transition-transform active:scale-95 mt-4 flex items-center justify-center gap-2'>
+                <Save size={18} /> Änderungen speichern
               </button>
             </form>
           </div>
