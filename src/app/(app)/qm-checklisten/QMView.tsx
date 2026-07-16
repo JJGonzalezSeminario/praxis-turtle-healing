@@ -41,12 +41,12 @@ function getYouTubeEmbedUrl(url: string) {
 
 const OHT_MEDIA = [
   { type: 'video', title: 'Schulungsvideo 1: Vorbereitung', url: 'https://youtube.com/shorts/tZFGxQyNNJs?feature=share' },
-  { type: 'video', title: 'Schulungsvideo 2: Füllung Oval', url: '/OHT-Infusion/oht_2_fuellung_oval.mp4' },
+  { type: 'video', title: 'Schulungsvideo 2: Füllung Oval', url: 'https://youtube.com/shorts/gsEmoT3Rr40?feature=share' },
   { type: 'image', title: 'Zusatzbild 3: Starten', url: '/OHT-Infusion/oht_3_starten.jpg' },
   { type: 'image', title: 'Zusatzbild 4: Ozon-Konzentration', url: '/OHT-Infusion/oht_4_ozon.jpg' },
-  { type: 'video', title: 'Schulungsvideo 5: Entleeren Oval', url: '/OHT-Infusion/oht_5_entleeren_oval.mp4' },
-  { type: 'video', title: 'Schulungsvideo 6: Beenden', url: '/OHT-Infusion/oht_6_beenden.mp4' },
-  { type: 'video', title: 'Schulungsvideo 7: Vitamin C Infusion', url: '/OHT-Infusion/oht_7_vit_c_infusion.mp4' },
+  { type: 'video', title: 'Schulungsvideo 5: Entleeren Oval', url: 'https://youtube.com/shorts/BeXEilUaMZM?feature=share' },
+  { type: 'video', title: 'Schulungsvideo 6: Beenden', url: 'https://youtube.com/shorts/R3ypnJ6PcIE?feature=share' },
+  { type: 'video', title: 'Schulungsvideo 7: Vitamin C Infusion', url: 'https://youtube.com/shorts/TmAj14TEpxI?feature=share' },
 ]
 
 export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
