@@ -47,5 +47,5 @@ export async function proxy(request: NextRequest) {
 
 // Konfiguration, für welche Routen der Türsteher aktiv werden soll
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|gif|webp)).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|gif|webp|mp4)).*)'],
 }

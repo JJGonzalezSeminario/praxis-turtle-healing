@@ -54,6 +54,6 @@ export async function proxy(request: NextRequest) {
 // 4. Definiere, für welche Seiten dieser Türsteher gelten soll (für alle, außer Bilder/Dateien)
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|mp4)$).*)',
   ],
 }

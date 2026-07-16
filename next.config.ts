@@ -28,27 +28,29 @@ const securityHeaders = [
     key: 'Permissions-Policy',
     value: 'camera=(), microphone=(), geolocation=()',
   },
-  // Content Security Policy: Legt fest, woher Ressourcen geladen werden dürfen
-  {
-    key: 'Content-Security-Policy',
-    value: [
-      "default-src 'self'",
-      // Bilder: nur eigene Domain, Supabase Storage und Data-URIs
-      `img-src 'self' data: blob: https://${supabaseHost}`,
-      // Verbindungen: eigene Domain + Supabase (inkl. WebSocket für Realtime)
-      `connect-src 'self' https://${supabaseHost} wss://${supabaseHost}`,
-      // Skripte: 'unsafe-inline' & 'unsafe-eval' für Next.js/React erforderlich
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      // Styles: eigene Domain + inline + Google Fonts
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      // Schriften: eigene Domain + Google Fonts CDN
-      "font-src 'self' https://fonts.gstatic.com",
-      // Dateien (für PDF-Viewer): Supabase Storage erlauben
-      `frame-src 'self' https://${supabaseHost}`,
-      // Kein Einbetten in fremde Seiten
-      "frame-ancestors 'none'",
-    ].join('; '),
-  },
+      // Content Security Policy: Legt fest, woher Ressourcen geladen werden dürfen
+      {
+        key: 'Content-Security-Policy',
+        value: [
+          "default-src 'self'",
+          // Bilder: nur eigene Domain, Supabase Storage und Data-URIs
+          `img-src 'self' data: blob: https://${supabaseHost}`,
+          // Videos/Audio: erlauben von eigener Domain
+          "media-src 'self'",
+          // Verbindungen: eigene Domain + Supabase (inkl. WebSocket für Realtime)
+          `connect-src 'self' https://${supabaseHost} wss://${supabaseHost}`,
+          // Skripte: 'unsafe-inline' & 'unsafe-eval' für Next.js/React erforderlich
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+          // Styles: eigene Domain + inline + Google Fonts
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          // Schriften: eigene Domain + Google Fonts CDN
+          "font-src 'self' https://fonts.gstatic.com",
+          // Dateien (für PDF-Viewer): Supabase Storage erlauben
+          `frame-src 'self' https://${supabaseHost}`,
+          // Kein Einbetten in fremde Seiten
+          "frame-ancestors 'none'",
+        ].join('; '),
+      },
 ]
 
 const nextConfig: NextConfig = {

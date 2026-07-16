@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { ClipboardList, Lock, FlaskConical, Sun, ArrowRight, ArrowLeft, Check, Repeat, Activity, ChevronRight, ChevronLeft, Calendar, Search } from 'lucide-react'
+import { ClipboardList, Lock, FlaskConical, Sun, ArrowRight, ArrowLeft, Check, Repeat, Activity, ChevronRight, ChevronLeft, Calendar, Search, Play, Image as ImageIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const ICON_MAP: Record<string, any> = {
@@ -23,6 +23,16 @@ const COLORS = [
   { text: 'text-fuchsia-600', bg: 'bg-fuchsia-50', border: 'border-fuchsia-200' },
 ]
 
+const OHT_MEDIA = [
+  { type: 'video', title: 'Schulungsvideo 1: Vorbereitung', url: '/OHT-Infusion/oht_1_vorbereitung.mp4' },
+  { type: 'video', title: 'Schulungsvideo 2: Füllung Oval', url: '/OHT-Infusion/oht_2_fuellung_oval.mp4' },
+  { type: 'image', title: 'Zusatzbild 3: Starten', url: '/OHT-Infusion/oht_3_starten.jpg' },
+  { type: 'image', title: 'Zusatzbild 4: Ozon-Konzentration', url: '/OHT-Infusion/oht_4_ozon.jpg' },
+  { type: 'video', title: 'Schulungsvideo 5: Entleeren Oval', url: '/OHT-Infusion/oht_5_entleeren_oval.mp4' },
+  { type: 'video', title: 'Schulungsvideo 6: Beenden', url: '/OHT-Infusion/oht_6_beenden.mp4' },
+  { type: 'video', title: 'Schulungsvideo 7: Vitamin C Infusion', url: '/OHT-Infusion/oht_7_vit_c_infusion.mp4' },
+]
+
 export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
   const [activeListId, setActiveListId] = useState<string | null>(null)
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({})
@@ -31,6 +41,7 @@ export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
   // States für den Bild-Viewer
   const [activeGuide, setActiveGuide] = useState<{ images: string[], taskText: string, taskId: string } | null>(null)
   const [guideStep, setGuideStep] = useState(0)
+  const [activeMedia, setActiveMedia] = useState<{ type: string, title: string, url: string } | null>(null)
 
   const toggleTask = (taskId: string) => {
     setCheckedItems(prev => ({ ...prev, [taskId]: !prev[taskId] }))
@@ -83,14 +94,24 @@ export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
         <p className="text-zinc-500 font-medium mb-6">Schritt {guideStep + 1} von {activeGuide.images.length}</p>
 
         <div className="bg-white p-4 sm:p-6 rounded-3xl shadow-xl border border-zinc-200 flex flex-col items-center">
-          <div className="relative w-full aspect-[3/4] sm:aspect-video rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200 mb-6">
-            <Image 
-              src={activeGuide.images[guideStep]} 
-              alt={`Schritt ${guideStep + 1}`}
-              fill
-              className="object-contain"
-              unoptimized // Falls die lokalen Bilder keine Next.js Optimierung brauchen
-            />
+          <div className="relative w-full aspect-[3/4] sm:aspect-video rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200 mb-6 flex items-center justify-center">
+            {activeGuide.images[guideStep].endsWith('.mp4') ? (
+              <video 
+                src={activeGuide.images[guideStep]} 
+                controls 
+                autoPlay 
+                playsInline
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <Image 
+                src={activeGuide.images[guideStep]} 
+                alt={`Schritt ${guideStep + 1}`}
+                fill
+                className="object-contain"
+                unoptimized // Falls die lokalen Bilder keine Next.js Optimierung brauchen
+              />
+            )}
           </div>
 
           <div className="flex w-full gap-4">
@@ -196,6 +217,87 @@ export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
             )
           })}
         </div>
+
+        {/* Schulungsmedien & Referenzen am Ende des OHT-Ablaufs */}
+        {activeList.id === 'oht-checklist' && (
+          <div className="mt-8 bg-white rounded-3xl p-6 shadow-sm border border-zinc-200/80 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <h3 className="text-xl font-extrabold text-zinc-900 mb-2 flex items-center gap-2">
+              <Play className="text-indigo-600 w-5.5 h-5.5" /> Schulungsmedien & Bild-Referenzen
+            </h3>
+            <p className="text-sm text-zinc-500 font-medium mb-6">
+              Nutzen Sie diese Videos und Zusatzbilder zur visuellen Unterstützung und Einarbeitung.
+            </p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {OHT_MEDIA.map((media, idx) => {
+                const Icon = media.type === 'video' ? Play : ImageIcon
+                return (
+                  <div 
+                    key={idx}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setActiveMedia(media)
+                    }}
+                    className="flex items-center gap-3 p-4 bg-zinc-50 hover:bg-indigo-50/50 border border-zinc-100 hover:border-indigo-100 rounded-2xl cursor-pointer transition group"
+                  >
+                    <div className="p-3 bg-white group-hover:bg-indigo-600 group-hover:text-white rounded-xl shadow-sm text-zinc-600 transition shrink-0">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide mb-0.5">
+                        {media.type === 'video' ? 'Video' : 'Bild'}
+                      </p>
+                      <p className="text-sm font-bold text-zinc-800 truncate group-hover:text-indigo-900 transition">
+                        {media.title}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Modaler Player für Schulungsmedien & Zusatzbilder (für Detailansicht) */}
+        {activeMedia && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden max-w-4xl w-full shadow-2xl relative flex flex-col max-h-[90vh]">
+              <div className="p-5 flex justify-between items-center border-b border-zinc-800">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  {activeMedia.type === 'video' ? <Play className="w-5 h-5 text-indigo-400" /> : <ImageIcon className="w-5 h-5 text-indigo-400" />}
+                  {activeMedia.title}
+                </h3>
+                <button 
+                  onClick={() => setActiveMedia(null)}
+                  className="text-zinc-400 hover:text-white bg-zinc-800/80 px-4 py-2 rounded-xl transition text-sm font-bold"
+                >
+                  Schließen ✕
+                </button>
+              </div>
+              
+              <div className="flex-1 bg-zinc-950 flex items-center justify-center overflow-hidden p-2 min-h-[300px]">
+                {activeMedia.type === 'video' ? (
+                  <video 
+                    src={encodeURI(activeMedia.url)} 
+                    controls 
+                    autoPlay
+                    className="max-h-[70vh] w-full object-contain"
+                  />
+                ) : (
+                  <div className="relative w-full h-[70vh]">
+                    <Image 
+                      src={encodeURI(activeMedia.url)} 
+                      alt={activeMedia.title}
+                      fill
+                      className="object-contain"
+                      unoptimized
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -285,6 +387,47 @@ export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* Modaler Player für Schulungsmedien & Zusatzbilder */}
+      {activeMedia && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden max-w-4xl w-full shadow-2xl relative flex flex-col max-h-[90vh]">
+            <div className="p-5 flex justify-between items-center border-b border-zinc-800">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                {activeMedia.type === 'video' ? <Play className="w-5 h-5 text-indigo-400" /> : <ImageIcon className="w-5 h-5 text-indigo-400" />}
+                {activeMedia.title}
+              </h3>
+              <button 
+                onClick={() => setActiveMedia(null)}
+                className="text-zinc-400 hover:text-white bg-zinc-800/80 px-4 py-2 rounded-xl transition text-sm font-bold"
+              >
+                Schließen ✕
+              </button>
+            </div>
+            
+            <div className="flex-1 bg-zinc-950 flex items-center justify-center overflow-hidden p-2 min-h-[300px]">
+              {activeMedia.type === 'video' ? (
+                <video 
+                  src={encodeURI(activeMedia.url)} 
+                  controls 
+                  autoPlay
+                  className="max-h-[70vh] w-full object-contain"
+                />
+              ) : (
+                <div className="relative w-full h-[70vh]">
+                  <Image 
+                    src={encodeURI(activeMedia.url)} 
+                    alt={activeMedia.title}
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
