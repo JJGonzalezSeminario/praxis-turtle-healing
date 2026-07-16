@@ -23,7 +23,7 @@ const COLORS = [
   { text: 'text-fuchsia-600', bg: 'bg-fuchsia-50', border: 'border-fuchsia-200' },
 ]
 
-const STORAGE_BASE = 'https://rgbakpsyxronsqeyzuaf.supabase.co/storage/v1/object/public/qm-videos'
+const STORAGE_BASE = 'https://github.com/JJGonzalezSeminario/praxis-turtle-healing/releases/download/v1.0.0-media'
 
 const OHT_MEDIA = [
   { type: 'video', title: 'Schulungsvideo 1: Vorbereitung', url: `${STORAGE_BASE}/oht_1_vorbereitung.mp4` },
