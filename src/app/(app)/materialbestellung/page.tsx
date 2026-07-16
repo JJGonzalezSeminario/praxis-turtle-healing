@@ -10,7 +10,8 @@ export default async function MaterialbestellungPage() {
   const [inventoryResult, ordersResult] = await Promise.all([
     supabase
       .from('inventory')
-      .select('id, name, category, pzn, status, min_stock')
+      .select('id, name, category, pzn, status, min_stock, shop_url')
+      .order('category', { ascending: true })
       .order('name', { ascending: true }),
     supabase
       .from('material_orders')
