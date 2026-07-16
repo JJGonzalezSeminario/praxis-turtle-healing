@@ -33,12 +33,14 @@ function getYouTubeEmbedUrl(url: string) {
     videoId = urlParams.get('v') || ''
   } else if (url.includes('youtu.be/')) {
     videoId = url.split('youtu.be/')[1]?.split('?')[0] || ''
+  } else if (url.includes('youtube.com/shorts/')) {
+    videoId = url.split('youtube.com/shorts/')[1]?.split('?')[0] || ''
   }
   return videoId ? `https://www.youtube.com/embed/${videoId}` : null
 }
 
 const OHT_MEDIA = [
-  { type: 'video', title: 'Schulungsvideo 1: Vorbereitung', url: '/OHT-Infusion/oht_1_vorbereitung.mp4' },
+  { type: 'video', title: 'Schulungsvideo 1: Vorbereitung', url: 'https://youtube.com/shorts/tZFGxQyNNJs?feature=share' },
   { type: 'video', title: 'Schulungsvideo 2: Füllung Oval', url: '/OHT-Infusion/oht_2_fuellung_oval.mp4' },
   { type: 'image', title: 'Zusatzbild 3: Starten', url: '/OHT-Infusion/oht_3_starten.jpg' },
   { type: 'image', title: 'Zusatzbild 4: Ozon-Konzentration', url: '/OHT-Infusion/oht_4_ozon.jpg' },
