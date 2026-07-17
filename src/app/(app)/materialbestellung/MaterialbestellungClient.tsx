@@ -477,6 +477,17 @@ export function MaterialbestellungClient({ initialInventory, initialOrders, isAd
                             <span className='text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded flex items-center gap-0.5'>
                               <Hash size={9} /> Min: {item.min_stock || 1}
                             </span>
+                            {item.shop_url && (
+                              <a
+                                href={item.shop_url}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                onClick={e => e.stopPropagation()}
+                                className='text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded flex items-center gap-0.5 hover:bg-indigo-100 transition-colors'
+                              >
+                                <ExternalLink size={9} /> Shop
+                              </a>
+                            )}
                           </div>
                         </div>
                       </div>
