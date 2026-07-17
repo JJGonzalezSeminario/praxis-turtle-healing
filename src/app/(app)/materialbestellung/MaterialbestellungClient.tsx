@@ -474,6 +474,9 @@ export function MaterialbestellungClient({ initialInventory, initialOrders, isAd
                           <div className='flex items-center gap-2 mt-0.5 flex-wrap'>
                             <span className='text-[10px] font-bold uppercase tracking-wider bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded'>{item.category}</span>
                             {item.pzn && <span className='text-[10px] font-mono text-zinc-400'>PZN: {item.pzn}</span>}
+                            <span className='text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded flex items-center gap-0.5'>
+                              <Hash size={9} /> Min: {item.min_stock || 1}
+                            </span>
                           </div>
                         </div>
                       </div>
