@@ -477,9 +477,14 @@ export function MaterialbestellungClient({ initialInventory, initialOrders, isAd
                           </div>
                         </div>
                       </div>
-                      <button onClick={() => deleteItem(item.id)} className='p-2 text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors sm:opacity-0 group-hover:opacity-100'>
-                        <Trash2 size={16} />
-                      </button>
+                      <div className='flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity'>
+                        <button onClick={() => openEdit(item)} className='p-2 text-zinc-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors' title='Bearbeiten'>
+                          <Pencil size={16} />
+                        </button>
+                        <button onClick={() => deleteItem(item.id)} className='p-2 text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors' title='Löschen'>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                   )
                 })}
