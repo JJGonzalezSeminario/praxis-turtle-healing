@@ -10,7 +10,7 @@ export default async function MaterialbestellungPage() {
   const [inventoryResult, ordersResult] = await Promise.all([
     supabase
       .from('inventory')
-      .select('id, name, category, pzn, status, min_stock, shop_url')
+      .select('id, name, category, pzn, status, min_stock, current_stock, shop_url')
       .order('category', { ascending: true })
       .order('name', { ascending: true }),
     supabase
@@ -19,6 +19,17 @@ export default async function MaterialbestellungPage() {
       .order('created_at', { ascending: false }),
   ])
 
+  // Fallback: falls current_stock-Spalte noch nicht existiert, ohne sie laden
+  let inventoryData = inventoryResult.data
+  if (inventoryResult.error && !inventoryData) {
+    const fallback = await supabase
+      .from('inventory')
+      .select('id, name, category, pzn, status, min_stock, shop_url')
+      .order('category', { ascending: true })
+      .order('name', { ascending: true })
+    inventoryData = fallback.data
+  }
+
   const isAdmin =
     profile.role?.slug === 'super_admin' ||
     profile.role?.slug === 'it_admin' ||
@@ -26,7 +37,10 @@ export default async function MaterialbestellungPage() {
 
   return (
     <MaterialbestellungClient
-      initialInventory={inventoryResult.data ?? []}
+      initialInventory={(inventoryData ?? []).map(item => ({
+        ...item,
+        current_stock: (item as any).current_stock ?? 0,
+      }))}
       initialOrders={ordersResult.data ?? []}
       isAdmin={isAdmin}
       userId={profile.id}
