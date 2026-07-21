@@ -257,7 +257,7 @@ function CategorySection({
                           PZN: {item.pzn}
                         </span>
                       )}
-                      <span className='text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded flex items-center gap-0.5'>
+                      <span className='text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded flex items-center gap-1 shadow-sm'>
                         <Hash size={9} /> Min: {item.min_stock || 1}
                       </span>
                       {item.shop_url && (
@@ -273,7 +273,7 @@ function CategorySection({
                       )}
                       {isCritical && (
                         <span className='text-[10px] font-bold text-rose-500 flex items-center gap-0.5'>
-                          <AlertCircle size={10} /> Auf der Liste
+                          <AlertCircle size={10} /> Auf der Einkaufsliste
                         </span>
                       )}
                     </div>
