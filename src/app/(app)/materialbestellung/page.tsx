@@ -10,24 +10,26 @@ export default async function MaterialbestellungPage() {
   const [inventoryResult, ordersResult] = await Promise.all([
     supabase
       .from('inventory')
-      .select('id, name, category, pzn, status, min_stock, current_stock, shop_url')
-      .order('category', { ascending: true })
-      .order('name', { ascending: true }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .select('id, name, category, pzn, status, min_stock, current_stock, shop_url') as any,
     supabase
       .from('material_orders')
       .select('id, created_at, items, profiles(full_name)')
       .order('created_at', { ascending: false }),
   ])
 
+  const inventoryResult2 = inventoryResult as { data: any[] | null; error: any }
+
   // Fallback: falls current_stock-Spalte noch nicht existiert, ohne sie laden
-  let inventoryData = inventoryResult.data
-  if (inventoryResult.error && !inventoryData) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let inventoryData: any[] | null = inventoryResult2.data
+  if (inventoryResult2.error && !inventoryData) {
     const fallback = await supabase
       .from('inventory')
       .select('id, name, category, pzn, status, min_stock, shop_url')
       .order('category', { ascending: true })
       .order('name', { ascending: true })
-    inventoryData = fallback.data
+    inventoryData = fallback.data as any[] | null
   }
 
   const isAdmin =
@@ -37,9 +39,9 @@ export default async function MaterialbestellungPage() {
 
   return (
     <MaterialbestellungClient
-      initialInventory={(inventoryData ?? []).map(item => ({
+      initialInventory={(inventoryData ?? []).map((item: any) => ({
         ...item,
-        current_stock: (item as any).current_stock ?? 0,
+        current_stock: item.current_stock ?? 0,
       }))}
       initialOrders={ordersResult.data ?? []}
       isAdmin={isAdmin}
