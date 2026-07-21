@@ -228,7 +228,7 @@ function CategorySection({
               <div
                 key={item.id}
                 className={cn(
-                  'px-5 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition hover:bg-zinc-50 group',
+                  'px-5 py-3.5 flex items-center justify-between gap-4 transition hover:bg-zinc-50 group',
                   isCritical && 'bg-rose-50/40'
                 )}
               >
@@ -281,8 +281,9 @@ function CategorySection({
                 </div>
 
                 {/* Stock counter + actions */}
-                <div className='flex items-center gap-3 ml-10 sm:ml-0'>
-                  <div onClick={e => e.stopPropagation()}>
+                <div className='flex items-center gap-3 shrink-0'>
+                  <div className='flex items-center gap-1.5 bg-zinc-50 border border-zinc-200 rounded-xl px-2 py-1'>
+                    <span className='text-[10px] font-bold text-zinc-400 uppercase hidden md:inline'>Bestand:</span>
                     <StockCounter
                       value={item.current_stock}
                       minStock={item.min_stock}
@@ -292,17 +293,17 @@ function CategorySection({
                   <div className='flex items-center gap-1 shrink-0'>
                     <button
                       onClick={() => onEdit(item)}
-                      className='p-2 text-zinc-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors'
+                      className='p-2 text-zinc-600 bg-zinc-100 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors border border-zinc-200'
                       title='Bearbeiten'
                     >
-                      <Pencil size={16} />
+                      <Pencil size={15} />
                     </button>
                     <button
                       onClick={() => onDelete(item.id)}
                       className='p-2 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors'
                       title='Löschen'
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 </div>
