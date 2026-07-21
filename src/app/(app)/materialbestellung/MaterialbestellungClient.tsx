@@ -289,7 +289,7 @@ function CategorySection({
                       onChange={v => onStockChange(item.id, v)}
                     />
                   </div>
-                  <div className='flex items-center gap-1 transition-opacity'>
+                  <div className='flex items-center gap-1 shrink-0'>
                     <button
                       onClick={() => onEdit(item)}
                       className='p-2 text-zinc-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors'
@@ -646,11 +646,11 @@ export function MaterialbestellungClient({ initialInventory, initialOrders, isAd
                           minStock={item.min_stock}
                           onChange={v => handleStockChange(item.id, v)}
                         />
-                        <div className='flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity'>
-                          <button onClick={() => openEdit(item)} className='p-2 text-zinc-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors' title='Bearbeiten'>
+                        <div className='flex items-center gap-1 shrink-0'>
+                          <button onClick={() => openEdit(item)} className='p-2 text-zinc-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors' title='Bearbeiten'>
                             <Pencil size={16} />
                           </button>
-                          <button onClick={() => deleteItem(item.id)} className='p-2 text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors' title='Löschen'>
+                          <button onClick={() => deleteItem(item.id)} className='p-2 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors' title='Löschen'>
                             <Trash2 size={16} />
                           </button>
                         </div>
