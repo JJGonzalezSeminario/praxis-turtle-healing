@@ -6,76 +6,123 @@ const OHT_CHECKLIST = {
   title: 'Ozon-Hochdosis-Therapie (OHT)',
   description: 'Standardarbeitsanweisung (SOP) für die Ozon-Hochdosis-Therapie. Beinhaltet die schrittweise Patientenvorbereitung, Geräteeinstellung, Durchführung und Nachsorge.',
   icon: 'activity',
-  checklist_items: [
+  isProtocol: true,
+  category: 'Therapie-SOP',
+  checklist_items: [],
+  protocol_steps: [
     {
-      id: 'oht-item-1',
-      task_text: 'Patientenvorbereitung: Unterschrift auf Aufklärungsformular kontrollieren & initiale Blutdruckmessung (RR) durchführen',
-      sort_order: 1
+      step: 1,
+      title: 'Patientenvorbereitung',
+      details: 'Unterschrift auf Aufklärungsformular kontrollieren & initiale Blutdruckmessung (RR) durchführen',
+      badge: 'Vorbereitung',
+      badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300'
     },
     {
-      id: 'oht-item-2',
-      task_text: 'Materialbedarf bereitstellen: Flexüle, Handschuhe, Desinfektionsmittel, Stauschlauch, Medozon i-Set, Heparin (1,2 ml) inkl. Spritze & RR-Messgerät',
-      sort_order: 2
+      step: 2,
+      title: 'Materialbedarf bereitstellen',
+      details: 'Flexüle, Handschuhe, Desinfektionsmittel, Stauschlauch, Medozon i-Set, Heparin (1,2 ml) inkl. Spritze & RR-Messgerät',
+      badge: 'Material',
+      badgeColor: 'bg-blue-100 text-blue-900 border-blue-300'
     },
     {
-      id: 'oht-item-3',
-      task_text: 'Gerätevorbereitung: OHT-Gerät (Hyper Medozon comfort) einschalten & Ozon-Flasche am Ventil öffnen',
-      sort_order: 3
+      step: 3,
+      title: 'Gerätevorbereitung',
+      details: 'OHT-Gerät (Hyper Medozon comfort) einschalten & Ozon-Flasche am Ventil öffnen',
+      badge: 'Gerät',
+      badgeColor: 'bg-amber-100 text-amber-900 border-amber-300'
     },
     {
-      id: 'oht-item-4',
-      task_text: 'Medozon i-Set vorbereiten: i-Set steril öffnen und den unteren Schlauch sofort schließen',
-      sort_order: 4
+      step: 4,
+      title: 'Medozon i-Set vorbereiten',
+      details: 'i-Set steril öffnen und den unteren Schlauch sofort schließen',
+      badge: 'Sterilgut',
+      badgeColor: 'bg-purple-100 text-purple-900 border-purple-300'
     },
     {
-      id: 'oht-item-5',
-      task_text: 'Heparin aufziehen: 1,2 ml Heparin aufziehen, langsam in das Oval (Tropfkammer) spritzen & Oval in die Halterung am Gerät einhängen',
-      sort_order: 5
+      step: 5,
+      title: 'Heparin aufziehen',
+      details: '1,2 ml Heparin aufziehen, langsam in das Oval (Tropfkammer) spritzen & Oval in die Halterung am Gerät einhängen',
+      subItems: [
+        { label: 'Dosierung', text: '1,2 ml Heparin in Tropfkammer' }
+      ],
+      badge: 'Medikation',
+      badgeColor: 'bg-rose-100 text-rose-900 border-rose-300'
     },
     {
-      id: 'oht-item-6',
-      task_text: 'Schlauchverbindungen: Unteren Schlauch für Patienten griffbereit halten. Oberen Schlauch auf mittigen Zugang am Gerät (Infusion) schrauben',
-      sort_order: 6
+      step: 6,
+      title: 'Schlauchverbindungen',
+      details: 'Unteren Schlauch für Patienten griffbereit halten. Oberen Schlauch auf mittigen Zugang am Gerät (Infusion) schrauben',
+      badge: 'Aufbau',
+      badgeColor: 'bg-indigo-100 text-indigo-900 border-indigo-300'
     },
     {
-      id: 'oht-item-7',
-      task_text: 'Geräteeinstellung: Am Touch-Display „Infusion“ wählen, Ozon-Konzentration auf 80 µg/ml einstellen & mit „OK“ (3. Knopf rechts) bestätigen',
-      sort_order: 7
+      step: 7,
+      title: 'Geräteeinstellung',
+      details: 'Am Touch-Display „Infusion“ wählen, Ozon-Konzentration auf 80 µg/ml einstellen & mit „OK“ (3. Knopf rechts) bestätigen',
+      subItems: [
+        { label: 'Einstellung', text: 'Ozon-Konzentration: 80 µg/ml' }
+      ],
+      badge: 'Parameter',
+      badgeColor: 'bg-teal-100 text-teal-900 border-teal-300'
     },
     {
-      id: 'oht-item-8',
-      task_text: 'Anschluss an den Patienten: Stauschlauch anlegen (geschlossen lassen), Flexüle beim Patienten legen & unteren (geschlossenen) Schlauch des Medozon-Sets anschließen',
-      sort_order: 8
+      step: 8,
+      title: 'Anschluss an den Patienten',
+      details: 'Stauschlauch anlegen (geschlossen lassen), Flexüle beim Patienten legen & unteren (geschlossenen) Schlauch des Medozon-Sets anschließen',
+      badge: 'Patient',
+      badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300'
     },
     {
-      id: 'oht-item-9',
-      task_text: 'Verbindungen & Sicherung: Schutzkappe abziehen, Schlauchsystem sicher mit Flexüle verbinden, Radklemme am Schlauchsystem öffnen & grünen Schalter (oben am Gerät) betätigen',
-      sort_order: 9
+      step: 9,
+      title: 'Verbindungen & Sicherung',
+      details: 'Schutzkappe abziehen, Schlauchsystem sicher mit Flexüle verbinden, Radklemme am Schlauchsystem öffnen & grünen Schalter (oben am Gerät) betätigen',
+      badge: 'Sicherheit',
+      badgeColor: 'bg-blue-100 text-blue-900 border-blue-300'
     },
     {
-      id: 'oht-item-10',
-      task_text: 'Schlauch fixieren: Den Schlauch mit Fixierpflaster leicht am Arm des Patienten ankleben, um ein versehentliches Hängenbleiben zu verhindern',
-      sort_order: 10
+      step: 10,
+      title: 'Schlauch fixieren',
+      details: 'Den Schlauch mit Fixierpflaster leicht am Arm des Patienten ankleben, um ein versehentliches Hängenbleiben zu verhindern',
+      badge: 'Fixierung',
+      badgeColor: 'bg-zinc-100 text-zinc-900 border-zinc-300'
     },
     {
-      id: 'oht-item-11',
-      task_text: 'Luftfalle aktivieren: Blutschlauch in oberen Sensor legen, in das Quetschventil einlegen & die silberne Taste an der Luftfalle drücken',
-      sort_order: 11
+      step: 11,
+      title: 'Luftfalle aktivieren',
+      details: 'Blutschlauch in oberen Sensor legen, in das Quetschventil einlegen & die silberne Taste an der Luftfalle drücken',
+      badge: 'Sensorik',
+      badgeColor: 'bg-purple-100 text-purple-900 border-purple-300'
     },
     {
-      id: 'oht-item-12',
-      task_text: 'Therapiestart & Überwachung: Sobald Signalton ertönt, Stauschlauch beim Patienten sofort öffnen. Infusion starten. WICHTIG: Personal bleibt zwingend am Patienten, Blutdruck regelmäßig messen und lückenlos dokumentieren! (5 automatische Zyklen)',
-      sort_order: 12
+      step: 12,
+      title: 'Therapiestart & Überwachung',
+      details: 'Sobald Signalton ertönt, Stauschlauch beim Patienten sofort öffnen. Infusion starten. WICHTIG: Personal bleibt zwingend am Patienten, Blutdruck regelmäßig messen und lückenlos dokumentieren! (5 automatische Zyklen)',
+      subItems: [
+        { label: 'Zyklen', text: '5 automatische Zyklen' },
+        { label: 'Pflicht', text: 'Personal bleibt zwingend am Patienten' }
+      ],
+      badge: 'Therapie & RR',
+      badgeColor: 'bg-rose-100 text-rose-900 border-rose-300'
     },
     {
-      id: 'oht-item-13',
-      task_text: 'Nachsorge: Nach regulärem Ende des 5. Zyklus eine Wartezeit von 10 Minuten einhalten',
-      sort_order: 13
+      step: 13,
+      title: 'Nachsorge',
+      details: 'Nach regulärem Ende des 5. Zyklus eine Wartezeit von 10 Minuten einhalten',
+      subItems: [
+        { label: 'Wartezeit', text: '10 Minuten Nachbeobachtung' }
+      ],
+      badge: 'Ruhephase',
+      badgeColor: 'bg-amber-100 text-amber-900 border-amber-300'
     },
     {
-      id: 'oht-item-14',
-      task_text: 'Begleittherapie: Im Anschluss eine Vitamin C Infusion (7,5 mg gelöst in 250 ml NaCl) verabreichen',
-      sort_order: 14
+      step: 14,
+      title: 'Begleittherapie (Vitamin C)',
+      details: 'Im Anschluss eine Vitamin C Infusion (7,5 mg gelöst in 250 ml NaCl) verabreichen',
+      subItems: [
+        { label: 'Begleit-Infusion', text: 'Vitamin C 7,5 mg in 250 ml NaCl' }
+      ],
+      badge: 'Abschluss-Infusion',
+      badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300'
     }
   ]
 }

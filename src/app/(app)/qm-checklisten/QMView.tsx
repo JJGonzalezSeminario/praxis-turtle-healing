@@ -236,6 +236,46 @@ export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
               ))}
             </div>
           </div>
+
+          {/* Schulungsmedien & Referenzen am Ende des OHT-Ablaufs */}
+          {activeList.id === 'oht-checklist' && (
+            <div className="mt-8 bg-white rounded-3xl p-6 shadow-sm border border-zinc-200/80 animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <h3 className="text-xl font-extrabold text-zinc-900 mb-2 flex items-center gap-2">
+                <Play className="text-indigo-600 w-5.5 h-5.5" /> Schulungsmedien & Bild-Referenzen
+              </h3>
+              <p className="text-sm text-zinc-500 font-medium mb-6">
+                Nutzen Sie diese Videos und Zusatzbilder zur visuellen Unterstützung und Einarbeitung.
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {OHT_MEDIA.map((media, idx) => {
+                  const Icon = media.type === 'video' ? Play : ImageIcon
+                  return (
+                    <div 
+                      key={idx}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setActiveMedia(media)
+                      }}
+                      className="flex items-center gap-3 p-4 bg-zinc-50 hover:bg-indigo-50/50 border border-zinc-100 hover:border-indigo-100 rounded-2xl cursor-pointer transition group"
+                    >
+                      <div className="p-3 bg-white group-hover:bg-indigo-600 group-hover:text-white rounded-xl shadow-sm text-zinc-600 transition shrink-0">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-indigo-600 uppercase tracking-wide mb-0.5">
+                          {media.type === 'video' ? 'Video' : 'Bild'}
+                        </p>
+                        <p className="text-sm font-bold text-zinc-800 truncate group-hover:text-indigo-900 transition">
+                          {media.title}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )
     }
