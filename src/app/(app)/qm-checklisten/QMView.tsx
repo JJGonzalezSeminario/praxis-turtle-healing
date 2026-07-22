@@ -164,12 +164,81 @@ export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
   }
 
   // ---------------------------------------------
-  // DETAIL-ANSICHT EINER CHECKLISTE
+  // DETAIL-ANSICHT EINER CHECKLISTE ODER EINES PROTOKOLLS
   // ---------------------------------------------
   if (activeListId) {
     const activeList = initialChecklists.find(l => l.id === activeListId)
     const color = COLORS[initialChecklists.findIndex(l => l.id === activeListId) % COLORS.length]
-    const Icon = ICON_MAP[activeList.icon] || ICON_MAP['default']
+    const Icon = ICON_MAP[activeList?.icon] || ICON_MAP['default']
+
+    if (activeList?.isProtocol) {
+      return (
+        <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+          <button 
+            onClick={() => setActiveListId(null)} 
+            className="flex items-center gap-2 text-zinc-500 font-bold bg-white border border-zinc-200 shadow-sm px-4 py-2 rounded-xl mb-6 hover:bg-zinc-50 hover:text-zinc-800 transition"
+          >
+            <ArrowLeft className="w-5 h-5"/> Zurück zur Übersicht
+          </button>
+
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 font-bold text-xs rounded-full border border-indigo-200 mb-2">
+                <FlaskConical size={14} /> Infusions- & Therapiestandard
+              </span>
+              <h2 className={cn("text-2xl sm:text-3xl font-extrabold flex items-center gap-3", color.text)}>
+                <Icon size={32} /> {activeList.title}
+              </h2>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-zinc-200/80 mb-6">
+            <p className="text-zinc-600 font-medium text-base mb-8 pb-4 border-b border-zinc-100">
+              {activeList.description}
+            </p>
+
+            <div className="space-y-6">
+              {activeList.protocol_steps.map((step: any) => (
+                <div key={step.step} className="bg-zinc-50/80 border border-zinc-200/80 rounded-2xl p-5 sm:p-6 transition-all hover:bg-white hover:shadow-md">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-xl bg-zinc-900 text-white font-extrabold flex items-center justify-center text-sm shadow-sm shrink-0">
+                        {step.step}
+                      </span>
+                      <h3 className="font-extrabold text-lg text-zinc-900">{step.title}</h3>
+                    </div>
+                    {step.badge && (
+                      <span className={cn("px-3 py-1 rounded-full text-xs font-bold border self-start sm:self-auto", step.badgeColor)}>
+                        {step.badge}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-zinc-600 text-sm font-medium mb-3 sm:pl-11">
+                    {step.details}
+                  </p>
+
+                  {step.subItems && step.subItems.length > 0 && (
+                    <div className="sm:pl-11 grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                      {step.subItems.map((sub: any, sIdx: number) => (
+                        <div key={sIdx} className="bg-white border border-zinc-200/90 rounded-xl p-3 shadow-2xs flex items-center gap-3">
+                          <span className="px-2.5 py-1 bg-zinc-100 text-zinc-800 font-extrabold text-xs rounded-md uppercase tracking-wider shrink-0">
+                            {sub.label}
+                          </span>
+                          <span className="text-sm font-bold text-zinc-800">
+                            {sub.text}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )
+    }
 
     return (
       <div className="animate-in fade-in slide-in-from-right-4 duration-300">
@@ -328,7 +397,12 @@ export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
   const filteredChecklists = initialChecklists.filter(list => 
     list.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (list.description && list.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    list.checklist_items.some((item: any) => item.task_text.toLowerCase().includes(searchTerm.toLowerCase()))
+    (list.checklist_items && list.checklist_items.some((item: any) => item.task_text.toLowerCase().includes(searchTerm.toLowerCase()))) ||
+    (list.protocol_steps && list.protocol_steps.some((step: any) => 
+      step.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      step.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (step.subItems && step.subItems.some((sub: any) => sub.text.toLowerCase().includes(searchTerm.toLowerCase())))
+    ))
   )
 
   // ---------------------------------------------
@@ -370,6 +444,36 @@ export function QMView({ initialChecklists }: { initialChecklists: any[] }) {
             const color = COLORS[idx % COLORS.length]
             const Icon = ICON_MAP[list.icon] || ICON_MAP['default']
             
+            if (list.isProtocol) {
+              return (
+                <div 
+                  key={list.id} 
+                  onClick={() => setActiveListId(list.id)} 
+                  className="bg-white rounded-3xl p-6 shadow-sm border border-zinc-200/80 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex justify-between items-start mb-4">
+                      <div className={cn("p-4 rounded-2xl shadow-sm transition group-hover:scale-110", color.bg, color.text)}>
+                        <Icon size={28} />
+                      </div>
+                      <span className="px-3 py-1 bg-indigo-50 text-indigo-700 font-bold text-xs rounded-full border border-indigo-200 flex items-center gap-1">
+                        <FlaskConical size={12} /> Protokoll
+                      </span>
+                    </div>
+                    <h3 className="font-extrabold text-xl text-zinc-800 mb-1">{list.title}</h3>
+                    <p className="text-sm text-zinc-500 font-medium mb-6 line-clamp-2">{list.description}</p>
+                  </div>
+                  
+                  <div className="pt-3 border-t border-zinc-100 flex items-center justify-between">
+                    <span className="text-xs font-bold text-zinc-400">Infusionsanweisung</span>
+                    <span className="text-xs font-bold text-indigo-600 group-hover:text-indigo-800 flex items-center gap-1">
+                      Protokoll öffnen <ArrowRight size={14} />
+                    </span>
+                  </div>
+                </div>
+              )
+            }
+
             const totalTasks = list.checklist_items.length
             const doneTasks = list.checklist_items.filter((item: any) => checkedItems[item.id]).length
             const progress = totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 100)

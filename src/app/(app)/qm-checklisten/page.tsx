@@ -80,6 +80,112 @@ const OHT_CHECKLIST = {
   ]
 }
 
+const CHELATIERUNG_PROTOCOL = {
+  id: 'ausleitung-chelatierung',
+  title: 'Ausleitung / Chelatierung',
+  description: 'Standardschema zur Entgiftung & Schwermetall-Ausleitung. Inkl. Harn-pH-Messung, DMPS/DTPA/EDTA, Protokoll N & Glutathion-Bolus.',
+  icon: 'flask-conical',
+  isProtocol: true,
+  category: 'Infusionsprotokoll',
+  checklist_items: [],
+  protocol_steps: [
+    {
+      step: 1,
+      title: 'pH-Wert im Urin ermitteln',
+      details: 'Voraussetzung für die Dosierung der Baseninfusion:',
+      subItems: [
+        { label: 'pH < 7', text: 'kleine Baseninfusion' },
+        { label: 'pH < 6', text: 'große Baseninfusion' }
+      ],
+      badge: 'Urindiagnostik',
+      badgeColor: 'bg-amber-100 text-amber-900 border-amber-300'
+    },
+    {
+      step: 2,
+      title: 'DMPS & Chelatbildner',
+      details: '1. Ampulle DMPS in 100ml NaCl UND Zink DTPA (Ü60) ODER Ca Na EDTA (U60) je nach Absprache',
+      subItems: [
+        { label: 'Ü60 (über 60 J.)', text: 'Zink DTPA (Ü60)' },
+        { label: 'U60 (unter 60 J.)', text: 'Ca Na EDTA (U60)' }
+      ],
+      badge: 'Chelatierung',
+      badgeColor: 'bg-blue-100 text-blue-900 border-blue-300'
+    },
+    {
+      step: 3,
+      title: 'Protokoll N + Folsäure',
+      details: '½ Ampulle Protokoll N (50 ml) + Folsäure in 250ml NaCl',
+      subItems: [
+        { label: 'Ersatzmittel', text: '3x ATP Konzentrat' }
+      ],
+      badge: 'Infusion',
+      badgeColor: 'bg-purple-100 text-purple-900 border-purple-300'
+    },
+    {
+      step: 4,
+      title: 'Glutathion-Bolus',
+      details: 'Während der Einlaufzeit von Protokoll N:',
+      subItems: [
+        { label: 'Bolus-Gabe', text: '1 Ampulle 600mg Glutathion als Bolus verabreichen' }
+      ],
+      badge: 'Bolus-Injektion',
+      badgeColor: 'bg-rose-100 text-rose-900 border-rose-300'
+    }
+  ]
+}
+
+const AUFBAU_INFUSION_PROTOCOL = {
+  id: 'aufbau-infusion',
+  title: 'Aufbau Infusion',
+  description: 'Vitalisierungs- & Regenerations-Schema. Inkl. Vitamin C, L-Carnitin, ATP-Konzentrat, Glutathion-Doppelbolus & Mineralien.',
+  icon: 'sun',
+  isProtocol: true,
+  category: 'Infusionsprotokoll',
+  checklist_items: [],
+  protocol_steps: [
+    {
+      step: 1,
+      title: 'Vitamin C & L-Carnitin Infusion',
+      details: 'Vorlauf-Infusion zur Zellregenerierung:',
+      subItems: [
+        { label: 'Rezeptur', text: 'Vitamin C 7,5 g + 1 Ampulle L-Carnitin in 100ml NaCl' }
+      ],
+      badge: 'Infusion 1',
+      badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300'
+    },
+    {
+      step: 2,
+      title: 'ATP-Konzentrat Infusion',
+      details: 'Mitochondrien-Energiekomplex:',
+      subItems: [
+        { label: 'Rezeptur', text: '3x Ampullen ATP-Konzentrat in 250ml NaCl' }
+      ],
+      badge: 'Infusion 2',
+      badgeColor: 'bg-indigo-100 text-indigo-900 border-indigo-300'
+    },
+    {
+      step: 3,
+      title: 'Glutathion Doppel-Bolus',
+      details: 'Parallel während der ATP-Konzentrat-Infusion:',
+      subItems: [
+        { label: 'Bolus-Gabe', text: '2 Ampullen 600mg Glutathion als Bolus verabreichen (= 1.200 mg Glutathion)' }
+      ],
+      badge: 'Bolus-Injektion',
+      badgeColor: 'bg-rose-100 text-rose-900 border-rose-300'
+    },
+    {
+      step: 4,
+      title: 'Mineralien Infusion',
+      details: 'Abschließende Mikronährstoff-Versorgung:',
+      subItems: [
+        { label: 'Rezeptur', text: '1 Ampulle Selenase + 1 Ampulle Magnesium (500mg) + 1 Ampulle Unizink in 100 ml NaCl' }
+      ],
+      badge: 'Infusion 3',
+      badgeColor: 'bg-teal-100 text-teal-900 border-teal-300'
+    }
+  ]
+}
+
 export default async function QMPage() {
   const supabase = await createClient()
 
@@ -96,8 +202,8 @@ export default async function QMPage() {
     checklist_items: list.checklist_items.sort((a: any, b: any) => a.sort_order - b.sort_order)
   })) || []
 
-  // Zusammenführen von OHT Checkliste und Supabase Checklisten
-  const allChecklists = [OHT_CHECKLIST, ...formattedChecklists]
+  // Zusammenführen von OHT Checkliste, Infusions-Protokollen und Supabase Checklisten
+  const allChecklists = [OHT_CHECKLIST, CHELATIERUNG_PROTOCOL, AUFBAU_INFUSION_PROTOCOL, ...formattedChecklists]
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-8">
