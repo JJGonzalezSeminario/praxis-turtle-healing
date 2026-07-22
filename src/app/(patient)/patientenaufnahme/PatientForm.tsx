@@ -185,8 +185,8 @@ export function PatientForm() {
       yPos += 4
     }
 
-    addText('Patientenaufklärung zur Infusionstherapie und Blutentnahme', true)
-    addText('Sehr geehrte Patientin, sehr geehrter Patient,\nim Rahmen Ihrer Behandlung ist eine Infusionstherapie und/oder eine Blutentnahme notwendig. Mit dieser Information möchten wir Sie über den Ablauf und mögliche Begleiterscheinungen aufklären.')
+    addText('Patientenaufklärung zur Infusionstherapie und Blutentnahme (Vorsorgliche Information)', true)
+    addText('Sehr geehrte Patientin, sehr geehrter Patient,\nsollte im Rahmen Ihrer Behandlung eine Infusionstherapie und/oder eine Blutentnahme notwendig sein bzw. durchgeführt werden, möchten wir Sie hiermit vorsorglich über den Ablauf und mögliche Begleiterscheinungen aufklären.')
     addText('Infusionstherapie', true)
     addText('Bei einer Infusionstherapie werden Ihnen Flüssigkeiten, Medikamente oder Nährstoffe über eine Vene direkt in den Blutkreislauf verabreicht. Dazu wird meist eine Vene am Unterarm oder an der Hand punktiert, in die ein kleiner Plastikschlauch (Venenverweilkanüle) eingeführt wird.')
     addText('Mögliche Begleiterscheinungen (Infusion):', true)
@@ -202,8 +202,8 @@ export function PatientForm() {
     
     yPos += 5
     addText('Einwilligungen des Patienten:', true)
-    addText(consentInfusion ? '[ X ] Ich habe die Aufklärung gelesen und willige der Infusionstherapie ein.' : '[   ] Ich habe die Aufklärung gelesen und willige der Infusionstherapie ein.')
-    addText(consentBlood ? '[ X ] Ich habe die Aufklärung gelesen und willige der Blutentnahme ein.' : '[   ] Ich habe die Aufklärung gelesen und willige der Blutentnahme ein.')
+    addText(consentInfusion ? '[ X ] Ich habe die Aufklärung gelesen und willige in eine Infusionstherapie ein (falls diese durchgeführt wird).' : '[   ] Ich habe die Aufklärung gelesen und willige in eine Infusionstherapie ein (falls diese durchgeführt wird).')
+    addText(consentBlood ? '[ X ] Ich habe die Aufklärung gelesen und willige in eine Blutentnahme ein (falls diese durchgeführt wird).' : '[   ] Ich habe die Aufklärung gelesen und willige in eine Blutentnahme ein (falls diese durchgeführt wird).')
 
     // Seite 3: Datenschutz & Unterschrift
     doc.addPage()
@@ -407,8 +407,8 @@ export function PatientForm() {
             </h2>
             
             <div className="bg-zinc-50 p-6 sm:p-8 rounded-2xl border border-zinc-200 text-zinc-700 text-sm leading-relaxed max-h-[45vh] overflow-y-auto custom-scrollbar shadow-inner space-y-4">
-              <h3 className="font-bold text-lg mb-4 text-zinc-900">Patientenaufklärung zur Infusionstherapie und Blutentnahme</h3>
-              <p>Sehr geehrte Patientin, sehr geehrter Patient,<br/>im Rahmen Ihrer Behandlung ist eine Infusionstherapie und/oder eine Blutentnahme notwendig. Mit dieser Information möchten wir Sie über den Ablauf und mögliche Begleiterscheinungen aufklären.</p>
+              <h3 className="font-bold text-lg mb-4 text-zinc-900">Patientenaufklärung zur Infusionstherapie und Blutentnahme (Vorsorgliche Information)</h3>
+              <p>Sehr geehrte Patientin, sehr geehrter Patient,<br/>sollte im Rahmen Ihrer Behandlung eine Infusionstherapie und/oder eine Blutentnahme notwendig sein bzw. durchgeführt werden, möchten wir Sie hiermit vorsorglich über den Ablauf und mögliche Begleiterscheinungen aufklären.</p>
               
               <h4 className="font-bold text-base mt-6 mb-2 text-zinc-900">Infusionstherapie</h4>
               <p>Bei einer Infusionstherapie werden Ihnen Flüssigkeiten, Medikamente oder Nährstoffe über eine Vene direkt in den Blutkreislauf verabreicht. Dazu wird meist eine Vene am Unterarm oder an der Hand punktiert, in die ein kleiner Plastikschlauch (Venenverweilkanüle) eingeführt wird.</p>
@@ -449,7 +449,7 @@ export function PatientForm() {
                 <div className={cn("w-6 h-6 border-2 rounded flex items-center justify-center shrink-0", consentInfusion ? "bg-emerald-600 border-emerald-600 text-white" : "bg-white")}>
                   {consentInfusion && <CheckIcon />}
                 </div>
-                <p className="font-bold text-sm text-zinc-700 select-none">Ich habe die Aufklärung gelesen und willige in die Infusionstherapie ein.</p>
+                <p className="font-bold text-sm text-zinc-700 select-none">Ich habe die Aufklärung gelesen und willige in eine Infusionstherapie ein, falls diese durchgeführt wird.</p>
               </div>
 
               <div 
@@ -462,7 +462,7 @@ export function PatientForm() {
                 <div className={cn("w-6 h-6 border-2 rounded flex items-center justify-center shrink-0", consentBlood ? "bg-emerald-600 border-emerald-600 text-white" : "bg-white")}>
                   {consentBlood && <CheckIcon />}
                 </div>
-                <p className="font-bold text-sm text-zinc-700 select-none">Ich habe die Aufklärung gelesen und willige in die Blutentnahme ein.</p>
+                <p className="font-bold text-sm text-zinc-700 select-none">Ich habe die Aufklärung gelesen und willige in eine Blutentnahme ein, falls diese durchgeführt wird.</p>
               </div>
             </div>
 
