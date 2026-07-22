@@ -249,7 +249,7 @@ export default function LoginPage() {
       <div className="mt-auto w-full max-w-md pt-8 text-center space-y-4 relative z-10">
         <div className="flex items-center justify-center gap-2 text-xs font-bold text-zinc-500 bg-white/50 w-fit mx-auto px-4 py-2 rounded-full border border-zinc-200">
           <Info size={14} className="text-teal-600" />
-          Probleme beim Login? <a href="mailto:it-support@turtle-healing.de" className="text-teal-600 hover:text-teal-800 transition-colors">IT-Support kontaktieren</a>
+          Probleme beim Login? <a href="mailto:jgitguy2025@outlook.de" className="text-teal-600 hover:text-teal-800 transition-colors">IT-Support kontaktieren</a>
         </div>
         
         {/* NEU: Funktionierende Links für Datenschutz und Impressum */}
