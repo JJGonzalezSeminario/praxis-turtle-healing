@@ -63,21 +63,28 @@ export function Sidebar({ profile, className }: { profile: UserProfile, classNam
   useEffect(() => {
     if (!isAdmin) return
 
+    let isMounted = true
+
     // 1. Initial count abrufen
     const fetchPendingCount = async () => {
-      const { count, error } = await supabase
-        .from('requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'ausstehend')
-      if (!error && count !== null) {
-        setPendingRequestsCount(count)
+      try {
+        const { count, error } = await supabase
+          .from('requests')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'ausstehend')
+        if (!error && count !== null && isMounted) {
+          setPendingRequestsCount(count)
+        }
+      } catch (err) {
+        console.error('Fehler beim Abrufen ausstehender Anträge:', err)
       }
     }
     fetchPendingCount()
 
-    // 2. Realtime-Subscription einrichten
+    // 2. Eindeutigen Channel-Namen pro Instanz erzeugen
+    const channelName = `sidebar-requests-${Math.random().toString(36).slice(2, 9)}`
     const channel = supabase
-      .channel('schema-db-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -92,6 +99,7 @@ export function Sidebar({ profile, className }: { profile: UserProfile, classNam
       .subscribe()
 
     return () => {
+      isMounted = false
       supabase.removeChannel(channel)
     }
   }, [isAdmin, supabase])
