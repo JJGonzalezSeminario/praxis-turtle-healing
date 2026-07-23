@@ -130,15 +130,15 @@ export default async function DashboardPage({ searchParams }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         {/* Widget 1: Material */}
-        <div className="bg-white p-8 rounded-[2rem] border border-zinc-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col justify-between transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.05)]">
+        <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col justify-between transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.05)]">
           <div className="flex justify-between items-start mb-6">
-            <div className={cn('p-4 rounded-2xl', orderCount > 0 ? 'bg-rose-50 text-rose-500' : 'bg-zinc-50 text-zinc-400')}>
+            <div className={cn('p-4 rounded-2xl', orderCount > 0 ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-500' : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-400')}>
               <AlertCircle size={28} strokeWidth={2.5} />
             </div>
-            <span className="text-5xl font-black text-zinc-900 tracking-tighter">{orderCount}</span>
+            <span className="text-5xl font-black text-zinc-900 dark:text-zinc-100 tracking-tighter">{orderCount}</span>
           </div>
           <div>
-            <h3 className="font-extrabold text-zinc-900 text-lg">Einkaufsliste</h3>
+            <h3 className="font-extrabold text-zinc-900 dark:text-zinc-100 text-lg">Einkaufsliste</h3>
             <p className={cn('text-sm font-medium mt-1', orderCount > 0 ? 'text-rose-500' : 'text-zinc-400')}>
               {orderCount > 0 ? 'Artikel müssen bestellt werden' : 'Lagerbestände sind optimal'}
             </p>
@@ -146,16 +146,16 @@ export default async function DashboardPage({ searchParams }: Props) {
         </div>
 
         {/* Widget 2: Heute im Haus */}
-        <div className="bg-white p-8 rounded-[2rem] border border-zinc-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col justify-between transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.05)]">
+        <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col justify-between transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.05)]">
           <div className="flex justify-between items-start mb-6">
-            <div className="p-4 bg-teal-50 text-teal-600 rounded-2xl">
+            <div className="p-4 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-2xl">
               <Users size={28} strokeWidth={2.5} />
             </div>
-            <span className="text-5xl font-black text-zinc-900 tracking-tighter">{workingToday.length}</span>
+            <span className="text-5xl font-black text-zinc-900 dark:text-zinc-100 tracking-tighter">{workingToday.length}</span>
           </div>
           <div>
-            <h3 className="font-extrabold text-zinc-900 text-lg">Heute im Haus</h3>
-            <p className="text-sm font-medium text-zinc-500 mt-1 truncate">
+            <h3 className="font-extrabold text-zinc-900 dark:text-zinc-100 text-lg">Heute im Haus</h3>
+            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-1 truncate">
               {workingToday.length > 0
                 ? workingToday.map((s: any) => s.profiles?.full_name?.split(' ')[0] || 'Teammitglied').join(', ')
                 : 'Noch niemand eingeteilt'}
@@ -164,19 +164,20 @@ export default async function DashboardPage({ searchParams }: Props) {
         </div>
 
         {/* Widget 3: Patienten */}
-        <div className="bg-white p-8 rounded-[2rem] border border-zinc-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col justify-between transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.05)]">
+        <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col justify-between transition-all hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.05)]">
           <div className="flex justify-between items-start mb-6">
-            <div className="p-4 bg-indigo-50 text-indigo-500 rounded-2xl">
+            <div className="p-4 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 dark:text-indigo-400 rounded-2xl">
               <FileText size={28} strokeWidth={2.5} />
             </div>
-            <span className="text-5xl font-black text-zinc-900 tracking-tighter">{patientCount}</span>
+            <span className="text-5xl font-black text-zinc-900 dark:text-zinc-100 tracking-tighter">{patientCount}</span>
           </div>
           <div>
-            <h3 className="font-extrabold text-zinc-900 text-lg">Neuaufnahmen</h3>
-            <p className="text-sm font-medium text-zinc-400 mt-1">Erfasste Formulare (Heute)</p>
+            <h3 className="font-extrabold text-zinc-900 dark:text-zinc-100 text-lg">Neuaufnahmen</h3>
+            <p className="text-sm font-medium text-zinc-400 dark:text-zinc-500 mt-1">Erfasste Formulare (Heute)</p>
           </div>
         </div>
       </div>
+
 
       {/* 3. PINNWAND */}
       <NewsBoardClient

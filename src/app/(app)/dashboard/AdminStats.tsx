@@ -137,27 +137,27 @@ export function AdminStats({
       {/* ─── Sektion-Header + Monatsnavigation ───────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-violet-50 text-violet-600 rounded-2xl border border-violet-100">
+          <div className="p-3 bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 rounded-2xl border border-violet-100 dark:border-violet-900/50">
             <BarChart2 size={24} />
           </div>
           <div>
-            <h2 className="text-2xl font-extrabold text-zinc-900 tracking-tight">Team-Statistiken</h2>
-            <p className="text-sm text-zinc-500 font-medium">Nur für Super Admins sichtbar</p>
+            <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight">Team-Statistiken</h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">Nur für Super Admins sichtbar</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href={`?stat_month=${prevMonthStr}`}
-            className="p-2 bg-white border border-zinc-200 shadow-sm rounded-xl hover:bg-zinc-50 text-zinc-600 transition-colors"
+            className="p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
           >
             <ChevronLeft size={18} strokeWidth={2.5} />
           </Link>
-          <span className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-sm font-bold text-zinc-800 shadow-sm min-w-[140px] text-center">
+          <span className="px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-bold text-zinc-800 dark:text-zinc-200 shadow-sm min-w-[140px] text-center">
             {monthLabel}
           </span>
           <Link
             href={`?stat_month=${nextMonthStr}`}
-            className="p-2 bg-white border border-zinc-200 shadow-sm rounded-xl hover:bg-zinc-50 text-zinc-600 transition-colors"
+            className="p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
           >
             <ChevronRight size={18} strokeWidth={2.5} />
           </Link>
@@ -168,19 +168,19 @@ export function AdminStats({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Karte: Arbeitsstunden */}
-        <div className="bg-white rounded-3xl border border-zinc-200 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-3 px-6 py-5 border-b border-zinc-100 bg-zinc-50/50">
-            <div className="p-2.5 bg-teal-50 text-teal-600 rounded-xl">
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-3 px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50">
+            <div className="p-2.5 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-xl">
               <Clock size={20} />
             </div>
             <div>
-              <h3 className="font-extrabold text-zinc-900">Arbeitsstunden</h3>
-              <p className="text-xs text-zinc-500 font-medium">Ist vs. Soll ({workingDaysInMonth} Werktage × 8h)</p>
+              <h3 className="font-extrabold text-zinc-900 dark:text-zinc-100">Arbeitsstunden</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Ist vs. Soll ({workingDaysInMonth} Werktage × 8h)</p>
             </div>
           </div>
-          <div className="divide-y divide-zinc-100">
+          <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {hoursPerEmployee.length === 0 ? (
-              <div className="py-10 text-center text-zinc-400 text-sm font-medium">
+              <div className="py-10 text-center text-zinc-400 dark:text-zinc-500 text-sm font-medium">
                 Keine Schichten in diesem Monat
               </div>
             ) : (
@@ -192,22 +192,22 @@ export function AdminStats({
                   <div key={profile.id} className="px-6 py-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center">
-                          <User size={14} className="text-zinc-500" />
+                        <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                          <User size={14} className="text-zinc-500 dark:text-zinc-400" />
                         </div>
-                        <span className="text-sm font-bold text-zinc-800">{profile.full_name}</span>
+                        <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200">{profile.full_name}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm font-bold">
                         <span className={cn(
-                          isOver ? 'text-emerald-600' : isUnder ? 'text-rose-500' : 'text-zinc-700'
+                          isOver ? 'text-emerald-600 dark:text-emerald-400' : isUnder ? 'text-rose-500 dark:text-rose-400' : 'text-zinc-700 dark:text-zinc-300'
                         )}>
                           {ist}h
                         </span>
-                        <span className="text-zinc-300">/</span>
-                        <span className="text-zinc-400 font-medium">{soll}h</span>
+                        <span className="text-zinc-300 dark:text-zinc-700">/</span>
+                        <span className="text-zinc-400 dark:text-zinc-500 font-medium">{soll}h</span>
                       </div>
                     </div>
-                    <div className="h-2 bg-zinc-100 rounded-full overflow-hidden">
+                    <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                       <div
                         className={cn(
                           'h-full rounded-full transition-all',
@@ -224,19 +224,19 @@ export function AdminStats({
         </div>
 
         {/* Karte: Urlaubsübersicht */}
-        <div className="bg-white rounded-3xl border border-zinc-200 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-3 px-6 py-5 border-b border-zinc-100 bg-zinc-50/50">
-            <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-3 px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50">
+            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
               <CalendarCheck size={20} />
             </div>
             <div>
-              <h3 className="font-extrabold text-zinc-900">Urlaubsübersicht {new Date(`${monthStr}-15`).getFullYear()}</h3>
-              <p className="text-xs text-zinc-500 font-medium">Verfügbar / Verbraucht / Ausstehend</p>
+              <h3 className="font-extrabold text-zinc-900 dark:text-zinc-100">Urlaubsübersicht {new Date(`${monthStr}-15`).getFullYear()}</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Verfügbar / Verbraucht / Ausstehend</p>
             </div>
           </div>
-          <div className="divide-y divide-zinc-100">
+          <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {profiles.length === 0 ? (
-              <div className="py-10 text-center text-zinc-400 text-sm font-medium">Keine Mitarbeiter</div>
+              <div className="py-10 text-center text-zinc-400 dark:text-zinc-500 text-sm font-medium">Keine Mitarbeiter</div>
             ) : (
               profiles.map(p => {
                 const lb = leaveMap.get(p.id)
@@ -246,19 +246,19 @@ export function AdminStats({
                 const available = Math.max(0, total - used - pending)
                 return (
                   <div key={p.id} className="px-6 py-4 flex items-center gap-4">
-                    <div className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
-                      <User size={14} className="text-zinc-500" />
+                    <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                      <User size={14} className="text-zinc-500 dark:text-zinc-400" />
                     </div>
-                    <span className="text-sm font-bold text-zinc-800 flex-1 truncate">{p.full_name}</span>
+                    <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex-1 truncate">{p.full_name}</span>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-1 rounded-lg font-bold">
+                      <span className="text-xs bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50 px-2 py-1 rounded-lg font-bold">
                         {available}d frei
                       </span>
-                      <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded-lg font-bold">
+                      <span className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2 py-1 rounded-lg font-bold">
                         {used}d genutzt
                       </span>
                       {pending > 0 && (
-                        <span className="text-xs bg-amber-50 text-amber-700 border border-amber-100 px-2 py-1 rounded-lg font-bold">
+                        <span className="text-xs bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/50 px-2 py-1 rounded-lg font-bold">
                           {pending}d ausstehend
                         </span>
                       )}
@@ -271,18 +271,19 @@ export function AdminStats({
         </div>
       </div>
 
+
       {/* ─── Grid: Antragsübersicht + Anwesenheitsrate ─────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Karte: Antragsübersicht */}
-        <div className="bg-white rounded-3xl border border-zinc-200 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-3 px-6 py-5 border-b border-zinc-100 bg-zinc-50/50">
-            <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-3 px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50">
+            <div className="p-2.5 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-xl">
               <Hourglass size={20} />
             </div>
             <div>
-              <h3 className="font-extrabold text-zinc-900">Antragsübersicht</h3>
-              <p className="text-xs text-zinc-500 font-medium">Nach Typ und Status</p>
+              <h3 className="font-extrabold text-zinc-900 dark:text-zinc-100">Antragsübersicht</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Nach Typ und Status</p>
             </div>
           </div>
           <div className="p-6 grid grid-cols-2 gap-4">
@@ -292,23 +293,23 @@ export function AdminStats({
               const genehmigt = ofType.filter(r => r.status === 'genehmigt').length
               const abgelehnt = ofType.filter(r => r.status === 'abgelehnt').length
               return (
-                <div key={type} className={cn('rounded-2xl border p-4 space-y-3', bg, border)}>
+                <div key={type} className={cn('rounded-2xl border p-4 space-y-3', bg, border, 'dark:bg-zinc-950/40 dark:border-zinc-800')}>
                   <div className="flex items-center gap-2">
                     <Icon size={16} className={color} />
                     <span className={cn('text-sm font-extrabold', color)}>{type}</span>
                   </div>
                   <div className="space-y-1.5 text-xs font-medium">
                     {ausstehend > 0 && (
-                      <div className="flex items-center gap-1.5 text-amber-700">
+                      <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
                         <Hourglass size={12} />
                         <span>{ausstehend} ausstehend</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-1.5 text-emerald-700">
+                    <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
                       <CheckCircle2 size={12} />
                       <span>{genehmigt} genehmigt</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-rose-600">
+                    <div className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
                       <XCircle size={12} />
                       <span>{abgelehnt} abgelehnt</span>
                     </div>
@@ -320,14 +321,14 @@ export function AdminStats({
         </div>
 
         {/* Karte: Anwesenheitsrate */}
-        <div className="bg-white rounded-3xl border border-zinc-200 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-3 px-6 py-5 border-b border-zinc-100 bg-zinc-50/50">
-            <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-3 px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50">
+            <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-xl">
               <Users size={20} />
             </div>
             <div>
-              <h3 className="font-extrabold text-zinc-900">Anwesenheitsrate</h3>
-              <p className="text-xs text-zinc-500 font-medium">Aktive Schichten vs. Fehlzeiten</p>
+              <h3 className="font-extrabold text-zinc-900 dark:text-zinc-100">Anwesenheitsrate</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Aktive Schichten vs. Fehlzeiten</p>
             </div>
           </div>
           <div className="p-6 grid grid-cols-2 gap-3">
@@ -338,21 +339,21 @@ export function AdminStats({
                 const abwesend = absenceMap.get(p.id) ?? 0
                 const total = aktiv + abwesend
                 const rate = total > 0 ? Math.round((aktiv / total) * 100) : 0
-                const rateColor = rate >= 90 ? 'text-emerald-700' : rate >= 70 ? 'text-amber-700' : 'text-rose-600'
-                const bgColor = rate >= 90 ? 'bg-emerald-50 border-emerald-100' : rate >= 70 ? 'bg-amber-50 border-amber-100' : 'bg-rose-50 border-rose-100'
+                const rateColor = rate >= 90 ? 'text-emerald-700 dark:text-emerald-400' : rate >= 70 ? 'text-amber-700 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
+                const bgColor = rate >= 90 ? 'bg-emerald-50 border-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-900/40' : rate >= 70 ? 'bg-amber-50 border-amber-100 dark:bg-amber-950/40 dark:border-amber-900/40' : 'bg-rose-50 border-rose-100 dark:bg-rose-950/40 dark:border-rose-900/40'
                 return (
                   <div key={p.id} className={cn('rounded-2xl border p-4 flex flex-col gap-1', bgColor)}>
-                    <div className="flex items-center gap-1.5 text-zinc-600 mb-1">
+                    <div className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 mb-1">
                       <User size={13} />
-                      <span className="text-xs font-bold text-zinc-700 truncate">{p.full_name.split(' ')[0]}</span>
+                      <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 truncate">{p.full_name.split(' ')[0]}</span>
                     </div>
                     <span className={cn('text-2xl font-black tracking-tight', rateColor)}>{rate}%</span>
-                    <span className="text-[10px] text-zinc-500 font-medium">{aktiv} Anwesend / {abwesend} Fehlzeit</span>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">{aktiv} Anwesend / {abwesend} Fehlzeit</span>
                   </div>
                 )
               })}
             {profiles.filter(p => activeShiftCountMap.has(p.id) || absenceMap.has(p.id)).length === 0 && (
-              <div className="col-span-2 py-8 text-center text-zinc-400 text-sm font-medium">
+              <div className="col-span-2 py-8 text-center text-zinc-400 dark:text-zinc-500 text-sm font-medium">
                 Keine Schichtdaten in diesem Monat
               </div>
             )}
@@ -361,14 +362,14 @@ export function AdminStats({
       </div>
 
       {/* ─── Dienstplan-Abdeckung ─────────────────────────────────────────────── */}
-      <div className="bg-white rounded-3xl border border-zinc-200 shadow-sm overflow-hidden">
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-zinc-100 bg-zinc-50/50">
-          <div className="p-2.5 bg-sky-50 text-sky-600 rounded-xl">
+      <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+        <div className="flex items-center gap-3 px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950/50">
+          <div className="p-2.5 bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 rounded-xl">
             <TrendingUp size={20} />
           </div>
           <div>
-            <h3 className="font-extrabold text-zinc-900">Dienstplan-Abdeckung</h3>
-            <p className="text-xs text-zinc-500 font-medium">Aktive Mitarbeiter pro Wochentag (Summe im Monat)</p>
+            <h3 className="font-extrabold text-zinc-900 dark:text-zinc-100">Dienstplan-Abdeckung</h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Aktive Mitarbeiter pro Wochentag (Summe im Monat)</p>
           </div>
         </div>
         <div className="px-8 py-6 flex items-end gap-4 h-44">
@@ -378,17 +379,17 @@ export function AdminStats({
             const isWeekend = idx >= 5
             return (
               <div key={day} className="flex-1 flex flex-col items-center gap-2">
-                <span className="text-xs font-bold text-zinc-500">{count > 0 ? count : ''}</span>
+                <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">{count > 0 ? count : ''}</span>
                 <div className="w-full flex items-end justify-center" style={{ height: '80px' }}>
                   <div
                     className={cn(
                       'w-full rounded-t-xl transition-all',
-                      isWeekend ? 'bg-zinc-100' : 'bg-sky-500'
+                      isWeekend ? 'bg-zinc-100 dark:bg-zinc-800' : 'bg-sky-500 dark:bg-sky-600'
                     )}
                     style={{ height: `${heightPct}%` }}
                   />
                 </div>
-                <span className={cn('text-xs font-bold', isWeekend ? 'text-zinc-300' : 'text-zinc-500')}>
+                <span className={cn('text-xs font-bold', isWeekend ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-500 dark:text-zinc-400')}>
                   {day}
                 </span>
               </div>
@@ -396,7 +397,7 @@ export function AdminStats({
           })}
         </div>
         {activeShifts.length === 0 && (
-          <div className="pb-6 text-center text-zinc-400 text-sm font-medium">
+          <div className="pb-6 text-center text-zinc-400 dark:text-zinc-500 text-sm font-medium">
             Keine Schichtdaten in diesem Monat
           </div>
         )}
@@ -405,3 +406,4 @@ export function AdminStats({
     </div>
   )
 }
+
