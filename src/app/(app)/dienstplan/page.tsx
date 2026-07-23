@@ -105,30 +105,30 @@ export default async function DienstplanPage({ searchParams }: Props) {
           <div className="flex items-center gap-2">
             <Link 
               href={`?view=${currentView}&date=${prevDateStr}`} 
-              className="p-2 bg-white border border-zinc-200 shadow-sm rounded-lg hover:bg-zinc-50 text-zinc-600 transition-colors"
+              className="p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
             >
               <ChevronLeft size={20} strokeWidth={2.5} />
             </Link>
             
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 tracking-tight w-[160px] sm:w-[200px] text-center">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight w-[160px] sm:w-[200px] text-center">
               {searchDate.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}
             </h1>
             
             <Link 
               href={`?view=${currentView}&date=${nextDateStr}`} 
-              className="p-2 bg-white border border-zinc-200 shadow-sm rounded-lg hover:bg-zinc-50 text-zinc-600 transition-colors"
+              className="p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
             >
               <ChevronRight size={20} strokeWidth={2.5} />
             </Link>
           </div>
 
           <div className="hidden sm:block border-l-2 border-emerald-500/30 pl-4 py-1">
-            <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Dienstplan</p>
-            <p className="text-sm font-medium text-zinc-400">Praxis-Besetzung</p>
+            <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Dienstplan</p>
+            <p className="text-sm font-medium text-zinc-400 dark:text-zinc-500">Praxis-Besetzung</p>
           </div>
         </div>
         
-        {/* Kontroll-Elemente fließen jetzt sauber um */}
+        {/* Kontroll-Elemente */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full xl:w-auto">
           <PrintButton />
           <RoleFilter />
@@ -160,30 +160,29 @@ export default async function DienstplanPage({ searchParams }: Props) {
 
       {currentView === 'monat' && (
         <div className="w-full">
-          {/* NEU: Keine min-w-[900px] mehr! Der Kalender passt sich dem Handy an. */}
-          <Card className="border-zinc-200/80 shadow-sm rounded-none sm:rounded-2xl overflow-hidden bg-white min-h-[calc(100vh-12rem)] flex flex-col print:min-h-0 print:border-none print:shadow-none">
+          <Card className="border-zinc-200/80 dark:border-zinc-800 shadow-sm rounded-none sm:rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 min-h-[calc(100vh-12rem)] flex flex-col print:min-h-0 print:border-none print:shadow-none">
             <CardContent className="p-0 flex flex-col flex-1">
               
               {/* Wochentage */}
-              <div className="grid grid-cols-7 border-b border-zinc-100 bg-zinc-50/70 text-center py-1 sm:py-3 print:bg-zinc-100/50">
+              <div className="grid grid-cols-7 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950/80 text-center py-1 sm:py-3 print:bg-zinc-100/50">
                 {weekdays.map((day) => (
-                  <span key={day} className="text-[10px] sm:text-xs font-semibold text-zinc-600 print:text-black">{day}</span>
+                  <span key={day} className="text-[10px] sm:text-xs font-semibold text-zinc-600 dark:text-zinc-400 print:text-black">{day}</span>
                 ))}
               </div>
 
-              {/* Raster: Auf dem Handy reichen 80px Höhe, am PC 140px */}
-              <div className="grid grid-cols-7 flex-1 divide-x divide-y divide-zinc-100 auto-rows-[minmax(80px,_1fr)] sm:auto-rows-[minmax(140px,_1fr)] print:auto-rows-auto print:divide-zinc-300">
+              {/* Raster */}
+              <div className="grid grid-cols-7 flex-1 divide-x divide-y divide-zinc-100 dark:divide-zinc-800 auto-rows-[minmax(80px,_1fr)] sm:auto-rows-[minmax(140px,_1fr)] print:auto-rows-auto print:divide-zinc-300">
                 {calendarCells.map((cell, idx) => {
                   const rawDayShifts = shifts.filter((s: any) => s.date === cell.dateStr)
                   const dayShifts = sortShifts(rawDayShifts)
                   const holiday = holidays.find(h => h.date === cell.dateStr)
 
                   if (!cell.dayNum) {
-                    return <div key={idx} className="p-0.5 sm:p-2 bg-zinc-50/30 text-transparent select-none print:bg-transparent" />
+                    return <div key={idx} className="p-0.5 sm:p-2 bg-zinc-50/30 dark:bg-zinc-950/40 text-transparent select-none print:bg-transparent" />
                   }
 
                   return (
-                    <div key={idx} className={cn("p-0.5 sm:p-2 flex flex-col transition-colors bg-white overflow-hidden print:h-auto print:overflow-visible print:break-inside-avoid print:p-1.5", cell.isToday && "bg-emerald-50/10 print:bg-transparent", holiday && "bg-rose-50/10")}>
+                    <div key={idx} className={cn("p-0.5 sm:p-2 flex flex-col transition-colors bg-white dark:bg-zinc-900 overflow-hidden print:h-auto print:overflow-visible print:break-inside-avoid print:p-1.5", cell.isToday && "bg-emerald-50/10 dark:bg-emerald-950/20 print:bg-transparent", holiday && "bg-rose-50/10 dark:bg-rose-950/20")}>
                       
                       <AddShiftDialog
                         profiles={profiles || []}
@@ -191,14 +190,14 @@ export default async function DienstplanPage({ searchParams }: Props) {
                         trigger={
                           <button 
                             type="button" 
-                            className="w-full block flex justify-between items-center mb-0.5 sm:mb-1 shrink-0 cursor-pointer rounded-sm hover:bg-zinc-100 p-0.5 sm:p-0.5 -mt-0.5 -mx-0.5 transition-colors"
+                            className="w-full block flex justify-between items-center mb-0.5 sm:mb-1 shrink-0 cursor-pointer rounded-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 p-0.5 sm:p-0.5 -mt-0.5 -mx-0.5 transition-colors"
                           >
                             <div className="flex flex-col sm:flex-row items-center sm:items-center gap-0.5 sm:gap-1.5 w-full">
-                              <span className={cn("text-[10px] sm:text-[11px] font-bold w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full text-zinc-700 print:text-black", cell.isToday && "bg-emerald-600 text-white shadow-md print:bg-transparent print:text-black", holiday && "text-rose-600 bg-rose-100 shadow-none font-extrabold print:bg-transparent print:text-rose-600")}>
+                              <span className={cn("text-[10px] sm:text-[11px] font-bold w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full text-zinc-700 dark:text-zinc-300 print:text-black", cell.isToday && "bg-emerald-600 text-white shadow-md print:bg-transparent print:text-black", holiday && "text-rose-600 dark:text-rose-400 bg-rose-100 dark:bg-rose-950/60 shadow-none font-extrabold print:bg-transparent print:text-rose-600")}>
                                 {cell.dayNum}
                               </span>
                               {holiday && (
-                                <span className="text-[7px] sm:text-[10px] font-bold text-rose-700 bg-rose-100/60 px-1 sm:px-1.5 py-0 sm:py-0.5 rounded truncate w-full sm:w-auto text-center sm:text-left">
+                                <span className="text-[7px] sm:text-[10px] font-bold text-rose-700 dark:text-rose-300 bg-rose-100/60 dark:bg-rose-950/80 px-1 sm:px-1.5 py-0 sm:py-0.5 rounded truncate w-full sm:w-auto text-center sm:text-left">
                                   {holiday.name}
                                 </span>
                               )}
@@ -207,7 +206,7 @@ export default async function DienstplanPage({ searchParams }: Props) {
                         }
                       />
 
-                      <div className="flex-1 flex flex-col space-y-0.5 sm:space-y-1 pr-0 sm:pr-1 scrollbar-thin scrollbar-thumb-zinc-200 scrollbar-track-transparent print:space-y-0.5 print:pr-0 overflow-y-hidden sm:overflow-y-auto">
+                      <div className="flex-1 flex flex-col space-y-0.5 sm:space-y-1 pr-0 sm:pr-1 custom-scrollbar print:space-y-0.5 print:pr-0 overflow-y-hidden sm:overflow-y-auto">
                         {dayShifts.map((shift: any) => (
                           <EditShiftDialog key={shift.id} shift={shift} profiles={profiles || []} />
                         ))}
@@ -218,7 +217,7 @@ export default async function DienstplanPage({ searchParams }: Props) {
                           trigger={
                             <button 
                               type="button" 
-                              className="block flex-1 w-full min-h-[1rem] sm:min-h-[1.5rem] cursor-pointer rounded-md hover:bg-zinc-50/80 mt-1 transition-colors border-none bg-transparent print:hidden" 
+                              className="block flex-1 w-full min-h-[1rem] sm:min-h-[1.5rem] cursor-pointer rounded-md hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 mt-1 transition-colors border-none bg-transparent print:hidden" 
                             />
                           }
                         />
@@ -231,6 +230,7 @@ export default async function DienstplanPage({ searchParams }: Props) {
           </Card>
         </div>
       )}
+
     </div>
   )
 }

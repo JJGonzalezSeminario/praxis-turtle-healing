@@ -24,32 +24,33 @@ export function EditShiftDialog({ shift, profiles }: { shift: any, profiles: any
   const userRoleSlug = shift.profiles?.roles?.slug || 'pflege'
 
   // Standard-Farbe (Pflege/MFA = Smaragdgrün)
-  let bgClass = "bg-emerald-50 border-emerald-100 text-emerald-900 hover:bg-emerald-100/70"
+  let bgClass = "bg-emerald-50 dark:bg-emerald-950/70 border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-300 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/60"
   let timeText = `${shift.start_time.substring(0, 5)} - ${shift.end_time.substring(0, 5)}`
 
   // 1. Wenn aktiv, färbe nach dem Slug aus deiner Datenbank
   if (shift.status === 'aktiv') {
     if (userRoleSlug === 'arzt') {
-      bgClass = "bg-indigo-50 border-indigo-100 text-indigo-900 hover:bg-indigo-100/70" // Ärzte = Blau
+      bgClass = "bg-indigo-50 dark:bg-indigo-950/70 border-indigo-200 dark:border-indigo-800/60 text-indigo-900 dark:text-indigo-300 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/60" // Ärzte = Blau
     } else if (userRoleSlug === 'physio' || userRoleSlug === 'therapeut') {
-      bgClass = "bg-purple-50 border-purple-100 text-purple-900 hover:bg-purple-100/70" // Physio = Lila
+      bgClass = "bg-purple-50 dark:bg-purple-950/70 border-purple-200 dark:border-purple-800/60 text-purple-900 dark:text-purple-300 hover:bg-purple-100/70 dark:hover:bg-purple-900/60" // Physio = Lila
     } else if (userRoleSlug === 'reinigung') {
-      bgClass = "bg-stone-50 border-stone-200 text-stone-800 hover:bg-stone-100/70" // Reinigung = Braun/Grau
+      bgClass = "bg-stone-50 dark:bg-zinc-800/80 border-stone-200 dark:border-zinc-700/60 text-stone-800 dark:text-zinc-300 hover:bg-stone-100/70 dark:hover:bg-zinc-700/60" // Reinigung = Grau
     } else if (userRoleSlug === 'super_admin' || userRoleSlug === 'it_admin') {
-      bgClass = "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200/60" // Admin = Grau
+      bgClass = "bg-zinc-100 dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700/60 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200/60 dark:hover:bg-zinc-700/60" // Admin = Grau
     }
   } 
   // 2. Abwesenheiten überschreiben die Rollenfarbe immer!
   else if (isSick) { 
-    bgClass = "bg-red-50 border-red-200 text-red-900 hover:bg-red-100"; 
+    bgClass = "bg-red-50 dark:bg-rose-950/80 border-red-200 dark:border-rose-800/70 text-red-900 dark:text-rose-300 hover:bg-red-100 dark:hover:bg-rose-900/70 font-semibold"; 
     timeText = "Krank" 
   } else if (isVacation) { 
-    bgClass = "bg-amber-50 border-amber-200 text-amber-900 hover:bg-amber-100"; 
+    bgClass = "bg-amber-50 dark:bg-amber-950/80 border-amber-200 dark:border-amber-800/70 text-amber-900 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/70 font-semibold"; 
     timeText = "Urlaub" 
   } else if (isTraining) { 
-    bgClass = "bg-blue-50 border-blue-200 text-blue-900 hover:bg-blue-100"; 
+    bgClass = "bg-blue-50 dark:bg-blue-950/80 border-blue-200 dark:border-blue-800/70 text-blue-900 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/70 font-semibold"; 
     timeText = "Fortbildung" 
   }
+
 
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

@@ -27,7 +27,7 @@ export function RoleFilter() {
   }
 
   return (
-    <div className="flex items-center gap-1 bg-zinc-100 p-1 rounded-xl border border-zinc-200/50">
+    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200/50 dark:border-zinc-800">
       {roles.map((role) => (
         <Button
           key={role.id}
@@ -36,8 +36,8 @@ export function RoleFilter() {
           onClick={() => handleFilter(role.id)}
           className={`rounded-lg px-3 py-1 text-xs font-medium transition-all ${
             currentRole === role.id
-              ? 'bg-white text-zinc-900 shadow-sm font-semibold'
-              : 'text-zinc-500 hover:text-zinc-900 hover:bg-transparent'
+              ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm font-semibold'
+              : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-transparent'
           }`}
         >
           {role.label}
