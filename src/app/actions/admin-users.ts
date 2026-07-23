@@ -47,6 +47,8 @@ async function requireSuperAdmin() {
   return user
 }
 
+import { logAuditAction } from '@/lib/actions/audit'
+
 // ─── Audit-Logging Hilfsfunktion ───────────────────────────────────────────
 // Protokolliert administrative Aktionen manipulationssicher unter Umgehung von RLS
 async function logAdminAction(
@@ -55,19 +57,7 @@ async function logAdminAction(
   targetUserId: string,
   details: Record<string, any> = {}
 ) {
-  try {
-    const supabaseAdmin = getAdminClient()
-    const { error } = await supabaseAdmin.from('audit_logs').insert({
-      actor_id: actorId,
-      action,
-      target_user_id: targetUserId,
-      details,
-    })
-    if (error) throw error
-  } catch (err) {
-    // Protokollierung darf die Hauptaktion nicht blockieren, aber wir loggen Fehler
-    console.error('Audit Log konnte nicht geschrieben werden:', err)
-  }
+  await logAuditAction(actorId, action, targetUserId, details)
 }
 
 // ─── Typen ──────────────────────────────────────────────────────────────────

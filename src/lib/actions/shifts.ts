@@ -2,32 +2,17 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { logAuditAction } from '@/lib/actions/audit'
 
 // ─── Authorisierungs-Guard ──────────────────────────────────────────────────
-// Prüft serverseitig, ob der aktuell eingeloggte Nutzer eine der erlaubten
-// Rollen besitzt. Wirft einen Fehler, wenn nicht — so sind alle Actions gesichert.
-async function requireRole(allowedSlugs: string[]) {
+// Prüft serverseitig, ob der aktuell eingeloggte Nutzer authentifiziert ist.
+// Jede angemeldete Rolle darf Schichten bearbeiten.
+async function requireAuthUser() {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
 
   if (authError || !user) {
     throw new Error('Nicht authentifiziert. Bitte neu einloggen.')
-  }
-
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('roles(slug)')
-    .eq('id', user.id)
-    .single()
-
-  if (profileError || !profile) {
-    throw new Error('Profil konnte nicht geladen werden.')
-  }
-
-  const roleSlug = (profile as any)?.roles?.slug as string | undefined
-
-  if (!roleSlug || !allowedSlugs.includes(roleSlug)) {
-    throw new Error(`Zugriff verweigert. Diese Aktion erfordert eine der Rollen: ${allowedSlugs.join(', ')}.`)
   }
 
   return user
@@ -57,9 +42,9 @@ interface ShiftUpdateData {
 // ─── Server Actions ─────────────────────────────────────────────────────────
 
 export async function createShift(formData: ShiftCreateData) {
+  let actorUser
   try {
-    // Nur Super Admin und Leitungskräfte dürfen Schichten anlegen
-    await requireRole(['super_admin', 'it_admin', 'arzt'])
+    actorUser = await requireAuthUser()
   } catch (e: any) {
     return { error: e.message }
   }
@@ -105,19 +90,37 @@ export async function createShift(formData: ShiftCreateData) {
     return { error: 'Einträge konnten nicht gespeichert werden.' }
   }
 
+  // Protokollieren
+  await logAuditAction(actorUser.id, 'CREATE_SHIFT', formData.profile_id, {
+    start_date: formData.start_date,
+    end_date: formData.end_date,
+    start_time: formData.start_time,
+    end_time: formData.end_time,
+    status: formData.status,
+    shift_type: formData.shift_type,
+    count: shiftsToInsert.length,
+  })
+
   revalidatePath('/dienstplan')
   return { success: true }
 }
 
 export async function updateShift(id: string, data: ShiftUpdateData) {
+  let actorUser
   try {
-    // Nur Berechtigte dürfen Schichten bearbeiten
-    await requireRole(['super_admin', 'it_admin', 'arzt'])
+    actorUser = await requireAuthUser()
   } catch (e: any) {
     return { error: e.message }
   }
 
   const supabase = await createClient()
+
+  // Vorherigen Zustand laden für Audit-Log Diff
+  const { data: oldShift } = await supabase
+    .from('shifts')
+    .select('user_id, date, start_time, end_time, status, shift_type')
+    .eq('id', id)
+    .single()
 
   const { error } = await supabase
     .from('shifts')
@@ -133,39 +136,69 @@ export async function updateShift(id: string, data: ShiftUpdateData) {
 
   if (error) return { error: 'Eintrag konnte nicht aktualisiert werden.' }
 
+  // Diff berechnen und protokollieren
+  const changes: Record<string, any> = {}
+  if (oldShift) {
+    if (oldShift.user_id !== data.profile_id) changes.profile_id = { old: oldShift.user_id, new: data.profile_id }
+    if (oldShift.date !== data.date) changes.date = { old: oldShift.date, new: data.date }
+    if (oldShift.start_time !== data.start_time) changes.start_time = { old: oldShift.start_time, new: data.start_time }
+    if (oldShift.end_time !== data.end_time) changes.end_time = { old: oldShift.end_time, new: data.end_time }
+    if (oldShift.status !== data.status) changes.status = { old: oldShift.status, new: data.status }
+    if (oldShift.shift_type !== data.shift_type) changes.shift_type = { old: oldShift.shift_type, new: data.shift_type }
+  }
+
+  await logAuditAction(actorUser.id, 'UPDATE_SHIFT', data.profile_id, {
+    shift_id: id,
+    date: data.date,
+    changes,
+  })
+
   revalidatePath('/dienstplan')
   return { success: true }
 }
 
 export async function deleteShift(id: string, deleteGroup: boolean = false) {
+  let actorUser
   try {
-    // Nur Berechtigte dürfen Schichten löschen
-    await requireRole(['super_admin', 'it_admin', 'arzt'])
+    actorUser = await requireAuthUser()
   } catch (e: any) {
     return { error: e.message }
   }
 
   const supabase = await createClient()
 
+  // Vorherige Details für Audit-Log laden
+  const { data: oldShift } = await supabase
+    .from('shifts')
+    .select('user_id, date, start_time, end_time, status, shift_type, group_id')
+    .eq('id', id)
+    .single()
+
   let query = supabase.from('shifts').delete()
 
   if (deleteGroup) {
-    // Wenn die Gruppe gelöscht werden soll, suchen wir erst den Stempel
-    const { data: shift } = await supabase.from('shifts').select('group_id').eq('id', id).single()
-    if (shift?.group_id) {
-      query = query.eq('group_id', shift.group_id)
+    if (oldShift?.group_id) {
+      query = query.eq('group_id', oldShift.group_id)
     } else {
-      // Falls keine Gruppe existiert, nur diesen einzelnen Tag löschen
       query = query.eq('id', id)
     }
   } else {
-    // Exakt nur diesen Tag löschen
     query = query.eq('id', id)
   }
 
   const { error } = await query
 
   if (error) return { error: 'Eintrag konnte nicht gelöscht werden.' }
+
+  await logAuditAction(actorUser.id, 'DELETE_SHIFT', oldShift?.user_id || null, {
+    shift_id: id,
+    date: oldShift?.date,
+    start_time: oldShift?.start_time,
+    end_time: oldShift?.end_time,
+    status: oldShift?.status,
+    shift_type: oldShift?.shift_type,
+    delete_group: deleteGroup,
+  })
 
   revalidatePath('/dienstplan')
   return { success: true }
