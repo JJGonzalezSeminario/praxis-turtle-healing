@@ -4,18 +4,18 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { 
   NotebookTabs, Search, Plus, Phone, Mail, MapPin, 
-  FileText, Trash2, X, FlaskConical, User, Pill, Building, Wrench, HelpCircle
+  FileText, Trash2, X, FlaskConical, User, Pill, Building, Wrench, HelpCircle, Pencil
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const CATEGORIES = [
-  { id: 'all', label: '📖 Alle Kontakte' },
-  { id: 'Labor', label: '🧪 Labore' },
-  { id: 'Arzt / Kollege', label: '🩺 Ärzte & Kollegen' },
-  { id: 'Apotheke', label: '💊 Apotheken' },
-  { id: 'Klinik', label: '🏥 Kliniken' },
-  { id: 'Technik', label: '🛠️ Technik & Support' },
-  { id: 'Sonstiges', label: '📂 Sonstiges' }
+  { id: 'all', label: 'Alle Kontakte' },
+  { id: 'Labor', label: 'Labore' },
+  { id: 'Arzt / Kollege', label: 'Ärzte & Kollegen' },
+  { id: 'Apotheke', label: 'Apotheken' },
+  { id: 'Klinik', label: 'Kliniken' },
+  { id: 'Technik', label: 'Technik & Support' },
+  { id: 'Sonstiges', label: 'Sonstiges' }
 ]
 
 const CAT_ICONS: Record<string, any> = {
@@ -26,6 +26,8 @@ const CAT_ICONS: Record<string, any> = {
   'Technik': Wrench,
   'Sonstiges': HelpCircle
 }
+
+const EMPTY_FORM = { name: '', category: 'Labor', phone: '', email: '', address: '', notes: '' }
 
 interface Props {
   initialContacts: any[]
@@ -39,24 +41,70 @@ export function KontaktbuchClient({ initialContacts, isAdmin }: Props) {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
   
-  // Modal-Formular
+  // Modal-State
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '', category: 'Labor', phone: '', email: '', address: '', notes: ''
-  })
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [formData, setFormData] = useState(EMPTY_FORM)
+
+  const openNewModal = () => {
+    setEditingId(null)
+    setFormData(EMPTY_FORM)
+    setIsModalOpen(true)
+  }
+
+  const openEditModal = (contact: any) => {
+    setEditingId(contact.id)
+    setFormData({
+      name: contact.name || '',
+      category: contact.category || 'Labor',
+      phone: contact.phone || '',
+      email: contact.email || '',
+      address: contact.address || '',
+      notes: contact.notes || '',
+    })
+    setIsModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setEditingId(null)
+    setFormData(EMPTY_FORM)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.name) return
 
-    const { data, error } = await supabase.from('contacts').insert([formData]).select()
-    if (!error && data) {
-      setContacts([...contacts, data[0]].sort((a, b) => a.name.localeCompare(b.name)))
-      setIsModalOpen(false)
-      setFormData({ name: '', category: 'Labor', phone: '', email: '', address: '', notes: '' })
+    if (editingId) {
+      // UPDATE bestehenden Kontakt
+      const { data, error } = await supabase
+        .from('contacts')
+        .update(formData)
+        .eq('id', editingId)
+        .select()
+        .single()
+
+      if (!error && data) {
+        setContacts(
+          contacts
+            .map(c => c.id === editingId ? data : c)
+            .sort((a, b) => a.name.localeCompare(b.name))
+        )
+        closeModal()
+      } else {
+        alert('Fehler beim Aktualisieren des Kontakts.')
+        console.error('Update-Fehler:', error)
+      }
     } else {
-      alert('Ein Fehler ist aufgetreten. Bitte versuche es erneut.')
-      console.error('Kontakt-Fehler:', error)
+      // INSERT neuen Kontakt
+      const { data, error } = await supabase.from('contacts').insert([formData]).select()
+      if (!error && data) {
+        setContacts([...contacts, data[0]].sort((a, b) => a.name.localeCompare(b.name)))
+        closeModal()
+      } else {
+        alert('Ein Fehler ist aufgetreten. Bitte versuche es erneut.')
+        console.error('Kontakt-Fehler:', error)
+      }
     }
   }
 
@@ -96,7 +144,7 @@ export function KontaktbuchClient({ initialContacts, isAdmin }: Props) {
         
         {isAdmin && (
           <button 
-            onClick={() => setIsModalOpen(true)}
+            onClick={openNewModal}
             className="bg-zinc-900 hover:bg-zinc-800 text-white px-5 py-3 rounded-xl font-bold shadow-md transition flex items-center gap-2 w-full sm:w-auto justify-center"
             aria-label="Neuen Kontakt hinzufügen"
           >
@@ -155,16 +203,26 @@ export function KontaktbuchClient({ initialContacts, isAdmin }: Props) {
             return (
               <div key={contact.id} className="bg-white rounded-3xl p-6 border border-zinc-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative group">
                 
-                {/* Admin Lösch-Button */}
+                {/* Admin Aktions-Buttons: Bearbeiten + Löschen */}
                 {isAdmin && (
-                  <button 
-                    onClick={() => handleDelete(contact.id)}
-                    className="absolute top-4 right-4 p-2 text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors md:opacity-0 group-hover:opacity-100"
-                    aria-label={`Kontakt "${contact.name}" löschen`}
-                    title="Kontakt löschen"
-                  >
-                    <Trash2 size={16} aria-hidden="true" />
-                  </button>
+                  <div className="absolute top-4 right-4 flex items-center gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => openEditModal(contact)}
+                      className="p-2 text-zinc-400 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition-colors"
+                      aria-label={`Kontakt "${contact.name}" bearbeiten`}
+                      title="Kontakt bearbeiten"
+                    >
+                      <Pencil size={15} aria-hidden="true" />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(contact.id)}
+                      className="p-2 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                      aria-label={`Kontakt "${contact.name}" löschen`}
+                      title="Kontakt löschen"
+                    >
+                      <Trash2 size={15} aria-hidden="true" />
+                    </button>
+                  </div>
                 )}
 
                 <div className="space-y-4">
@@ -211,16 +269,19 @@ export function KontaktbuchClient({ initialContacts, isAdmin }: Props) {
         </div>
       )}
 
-      {/* MODAL: NEUER KONTAKT */}
+      {/* MODAL: NEUER / BEARBEITETER KONTAKT */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in" onClick={() => setIsModalOpen(false)}>
+        <div className="fixed inset-0 bg-zinc-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in" onClick={closeModal}>
           <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg border border-zinc-200 overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
             
             <div className="flex justify-between items-center p-6 border-b border-zinc-100 bg-zinc-50/50">
               <h2 className="text-xl font-extrabold text-zinc-900 flex items-center gap-2">
-                <Plus className="text-teal-600" size={24} aria-hidden="true" /> Neuen Kontakt anlegen
+                {editingId
+                  ? <><Pencil className="text-teal-600" size={22} aria-hidden="true" /> Kontakt bearbeiten</>
+                  : <><Plus className="text-teal-600" size={24} aria-hidden="true" /> Neuen Kontakt anlegen</>
+                }
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 text-zinc-400 hover:bg-zinc-200 rounded-full transition" aria-label="Modal schließen">
+              <button onClick={closeModal} className="p-2 text-zinc-400 hover:bg-zinc-200 rounded-full transition" aria-label="Modal schließen">
                 <X size={20} aria-hidden="true" />
               </button>
             </div>
@@ -238,12 +299,12 @@ export function KontaktbuchClient({ initialContacts, isAdmin }: Props) {
                   className="w-full border-2 border-zinc-100 p-3 rounded-xl outline-none focus:border-teal-500 font-bold text-zinc-800 bg-white"
                   value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
                 >
-                  <option value="Labor">🧪 Labor</option>
-                  <option value="Arzt / Kollege">🩺 Arzt / Kollege</option>
-                  <option value="Apotheke">💊 Apotheke</option>
-                  <option value="Klinik">🏥 Klinik</option>
-                  <option value="Technik">🛠️ Technik & Support</option>
-                  <option value="Sonstiges">📂 Sonstiges</option>
+                  <option value="Labor">Labor</option>
+                  <option value="Arzt / Kollege">Arzt / Kollege</option>
+                  <option value="Apotheke">Apotheke</option>
+                  <option value="Klinik">Klinik</option>
+                  <option value="Technik">Technik & Support</option>
+                  <option value="Sonstiges">Sonstiges</option>
                 </select>
               </div>
 
@@ -269,7 +330,7 @@ export function KontaktbuchClient({ initialContacts, isAdmin }: Props) {
               </div>
 
               <button type="submit" className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-teal-600/20 transition-transform active:scale-95">
-                Kontakt im Telefonbuch speichern
+                {editingId ? 'Änderungen speichern' : 'Kontakt im Telefonbuch speichern'}
               </button>
             </form>
           </div>
