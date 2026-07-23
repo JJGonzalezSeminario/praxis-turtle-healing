@@ -5,49 +5,90 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { NewsBoardClient } from './NewsBoardClient'
+import { AdminStats } from './AdminStats'
 
-export default async function DashboardPage() {
-  // Der Patienten-Redirect wird jetzt zentral in (app)/layout.tsx gehandhabt.
-  // Dieser Guard hier ist daher nicht mehr nötig.
+type Props = {
+  searchParams: Promise<{ stat_month?: string }>
+}
+
+export default async function DashboardPage({ searchParams }: Props) {
   const profile = await getSessionOrRedirect()
 
   const supabase = await createClient()
-  // Fix: Berliner Zeitzone verwenden (nicht UTC), da toISOString() UTC zurückgibt
-  // und um 23:00-23:59 Berliner Zeit bereits der nächste UTC-Tag beginnt.
   const todayStr = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Berlin' }).format(new Date())
   const startOfDay = `${todayStr}T00:00:00+02:00`
   const endOfDay = `${todayStr}T23:59:59+02:00`
 
-  // Fix #7: Alle Daten PARALLEL laden statt sequenziell
-  const [ordersResult, shiftsResult, patientResult, newsResult] = await Promise.all([
-    // Offene Materialbestellungen
+  // ─── Monatsnavigation für Statistiken ───────────────────────────────────────
+  const { stat_month } = await searchParams
+  const now = new Date()
+  const currentMonthStr = stat_month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const [statYear, statMonthNum] = currentMonthStr.split('-').map(Number)
+  const statMonthStart = `${currentMonthStr}-01`
+  const statMonthLastDay = new Date(statYear, statMonthNum, 0).getDate()
+  const statMonthEnd = `${currentMonthStr}-${String(statMonthLastDay).padStart(2, '0')}`
+
+  // Werktage im Statistikmonat berechnen (Mo–Fr)
+  let workingDays = 0
+  for (let d = 1; d <= statMonthLastDay; d++) {
+    const wd = new Date(statYear, statMonthNum - 1, d).getDay()
+    if (wd !== 0 && wd !== 6) workingDays++
+  }
+
+  // Vor-/Nächster Monat für Navigation
+  const prevDate = new Date(statYear, statMonthNum - 2, 1)
+  const nextDate = new Date(statYear, statMonthNum, 1)
+  const prevMonthStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`
+  const nextMonthStr = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}`
+
+  // Alle Daten PARALLEL laden
+  const baseQueries = [
     supabase
       .from('inventory')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'offen'),
-
-    // Schichten von HEUTE mit korrektem Server-seitigem Join
-    // Fix: Nur aktive Schichten (status = 'aktiv') werden als "im Haus" gezählt
     supabase
       .from('shifts')
       .select('*, profiles!shifts_user_id_fkey(full_name)')
       .eq('date', todayStr)
       .eq('status', 'aktiv'),
-
-    // Patientenaufnahmen von heute (anonymer Zähler)
     supabase
       .from('patient_intakes')
       .select('*', { count: 'exact', head: true })
       .gte('created_at', startOfDay)
       .lte('created_at', endOfDay),
-
-    // Pinnwand-Nachrichten
     supabase
       .from('news_board')
       .select('*, profiles(full_name)')
       .order('created_at', { ascending: false })
       .limit(20),
-  ])
+  ] as const
+
+  // Admin-Statistiken nur für Super Admins laden
+  const adminQueries = profile.is_super_admin
+    ? [
+        supabase
+          .from('shifts')
+          .select('user_id, date, start_time, end_time, status')
+          .gte('date', statMonthStart)
+          .lte('date', statMonthEnd),
+        supabase
+          .from('profiles')
+          .select('id, full_name')
+          .eq('is_active', true)
+          .order('full_name'),
+        supabase
+          .from('requests')
+          .select('id, user_id, type, status, start_date, end_date'),
+        supabase
+          .from('leave_balances')
+          .select('user_id, total_days, used_days')
+          .eq('year', statYear),
+      ]
+    : []
+
+  const [ordersResult, shiftsResult, patientResult, newsResult, ...adminResults] =
+    await Promise.all([...baseQueries, ...adminQueries])
 
   const orderCount = ordersResult.count ?? 0
   const workingToday = (shiftsResult.data ?? []) as any[]
@@ -56,6 +97,12 @@ export default async function DashboardPage() {
 
   const isAdmin =
     profile.role?.slug === 'super_admin' || profile.role?.slug === 'it_admin'
+
+  // Admin-Statistik-Daten auspacken
+  const adminShifts = profile.is_super_admin ? ((adminResults[0] as any)?.data ?? []) : []
+  const adminProfiles = profile.is_super_admin ? ((adminResults[1] as any)?.data ?? []) : []
+  const adminRequests = profile.is_super_admin ? ((adminResults[2] as any)?.data ?? []) : []
+  const adminLeaveBalances = profile.is_super_admin ? ((adminResults[3] as any)?.data ?? []) : []
 
   const dateOptions: Intl.DateTimeFormatOptions = {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
@@ -131,12 +178,26 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* 3. PINNWAND (Client Component — nur dieser Teil ist interaktiv) */}
+      {/* 3. PINNWAND */}
       <NewsBoardClient
         initialNews={news}
         currentUserId={profile.id}
         isAdmin={isAdmin}
       />
+
+      {/* 4. ADMIN-STATISTIKEN (nur Super Admin) */}
+      {profile.is_super_admin && (
+        <AdminStats
+          profiles={adminProfiles}
+          shifts={adminShifts}
+          requests={adminRequests}
+          leaveBalances={adminLeaveBalances}
+          monthStr={currentMonthStr}
+          prevMonthStr={prevMonthStr}
+          nextMonthStr={nextMonthStr}
+          workingDaysInMonth={workingDays}
+        />
+      )}
 
     </div>
   )
